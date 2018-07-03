@@ -63,3 +63,11 @@ extern int hMenu;
 extern int hMenuDisasm;
 extern int hMenuDump;
 extern int hMenuStack;
+
+enum
+{
+	MENU_AUTO_LABEL_VFTABLE,
+	MENU_DISASM_ADLER32,
+	MENU_DUMP_ADLER32,
+	MENU_STACK_ADLER32
+};

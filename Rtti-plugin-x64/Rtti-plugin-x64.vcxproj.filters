@@ -42,6 +42,9 @@
     <Filter Include="Library Files">
       <UniqueIdentifier>{83b94fba-0963-43a4-b8bd-12730a208fad}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Lib">
+      <UniqueIdentifier>{8877535d-fe5e-46fe-9816-0053065efea4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pluginsdk\capstone\arm.h">
@@ -281,6 +284,12 @@
     <ClInclude Include="pluginmain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Lib\ini.h">
+      <Filter>Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="pluginsdk\x32bridge.lib">
@@ -343,6 +352,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pluginmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Lib\ini.cpp">
+      <Filter>Lib</Filter>
+    </ClCompile>
+    <ClCompile Include="config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

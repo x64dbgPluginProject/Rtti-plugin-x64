@@ -1,12 +1,12 @@
 #include "plugin.h"
+#include "Lib\ini.h"
+#include "config.h"
 
-enum
-{
-    MENU_TEST,
-    MENU_DISASM_ADLER32,
-    MENU_DUMP_ADLER32,
-    MENU_STACK_ADLER32
-};
+struct config_t {
+	bool auto_label_vftable;
+} config;
+
+
 
 static void Adler32Menu(int hWindow)
 {
@@ -78,8 +78,9 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
 {
     switch(info->hEntry)
     {
-    case MENU_TEST:
-        MessageBoxA(hwndDlg, "Test Menu Entry Clicked!", PLUGIN_NAME, MB_ICONINFORMATION);
+    case MENU_AUTO_LABEL_VFTABLE:
+		settings.auto_label_vftable = !settings.auto_label_vftable;
+		SaveConfig();
         break;
 
     case MENU_DISASM_ADLER32:
@@ -115,8 +116,14 @@ void pluginStop()
 //Do GUI/Menu related things here.
 void pluginSetup()
 {
-    _plugin_menuaddentry(hMenu, MENU_TEST, "&Menu Test");
+	SetConfigPath();
+	LoadConfig();
+
+    _plugin_menuaddentry(hMenu, MENU_AUTO_LABEL_VFTABLE, "&Menu Test");
     _plugin_menuaddentry(hMenuDisasm, MENU_DISASM_ADLER32, "&Adler32 Selection");
     _plugin_menuaddentry(hMenuDump, MENU_DUMP_ADLER32, "&Adler32 Selection");
     _plugin_menuaddentry(hMenuStack, MENU_STACK_ADLER32, "&Adler32 Selection");
+
+	// Update the settings menu
+	_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_LABEL_VFTABLE, settings.auto_label_vftable);
 }
