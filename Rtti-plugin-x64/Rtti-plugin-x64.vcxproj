@@ -170,16 +170,20 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="config.cpp" />
+    <ClCompile Include="Lib\config.cpp" />
     <ClCompile Include="Lib\ini.cpp" />
+    <ClCompile Include="Lib\MemHelpers.cpp" />
+    <ClCompile Include="Lib\RTTI.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="pluginmain.cpp" />
-    <ClCompile Include="Rtti.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="config.h" />
+    <ClInclude Include="Lib\config.h" />
     <ClInclude Include="Lib\ini.h" />
     <ClInclude Include="Lib\macros.h" />
+    <ClInclude Include="Lib\MemHelpers.h" />
+    <ClInclude Include="Lib\RTTI.h" />
+    <ClInclude Include="Lib\RTINFO.h" />
     <ClInclude Include="plugin.h" />
     <ClInclude Include="pluginmain.h" />
     <ClInclude Include="pluginsdk\bridgegraph.h" />
@@ -259,7 +263,6 @@
     <ClInclude Include="pluginsdk\_scriptapi_register.h" />
     <ClInclude Include="pluginsdk\_scriptapi_stack.h" />
     <ClInclude Include="pluginsdk\_scriptapi_symbol.h" />
-    <ClInclude Include="Rtti.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="pluginsdk\capstone\capstone_x64.lib">

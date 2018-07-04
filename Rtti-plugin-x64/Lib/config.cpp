@@ -1,6 +1,6 @@
 #include "config.h"
-#include "pluginmain.h"
-#include "Lib\ini.h"
+#include "ini.h"
+#include "..\pluginmain.h"
 
 string config_path;
 settings_t settings;

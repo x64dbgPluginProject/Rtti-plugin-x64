@@ -287,13 +287,19 @@
     <ClInclude Include="Lib\ini.h">
       <Filter>Lib</Filter>
     </ClInclude>
-    <ClInclude Include="config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Rtti.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Lib\macros.h">
+      <Filter>Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="Lib\config.h">
+      <Filter>Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="Lib\MemHelpers.h">
+      <Filter>Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="Lib\RTTI.h">
+      <Filter>Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="Lib\RTINFO.h">
       <Filter>Lib</Filter>
     </ClInclude>
   </ItemGroup>
@@ -363,11 +369,14 @@
     <ClCompile Include="Lib\ini.cpp">
       <Filter>Lib</Filter>
     </ClCompile>
-    <ClCompile Include="config.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Lib\config.cpp">
+      <Filter>Lib</Filter>
     </ClCompile>
-    <ClCompile Include="Rtti.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Lib\MemHelpers.cpp">
+      <Filter>Lib</Filter>
+    </ClCompile>
+    <ClCompile Include="Lib\RTTI.cpp">
+      <Filter>Lib</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
