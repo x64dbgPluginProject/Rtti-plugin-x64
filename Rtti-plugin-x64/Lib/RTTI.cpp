@@ -15,9 +15,6 @@ RTTI::RTTI(duint addr)
 	m_this = addr;
 
 	m_isValid = GetRTTI(m_this);
-
-	if (!m_isValid)
-		dprintf("Couldn't parse RTTI data at %p\n", addr);
 }
 
 bool RTTI::GetRTTI(duint addr)
@@ -95,7 +92,7 @@ RTTIBaseClassDescriptor RTTI::GetBaseClassDescriptor(size_t n)
 	if (!m_isValid)
 		return RTTIBaseClassDescriptor();
 
-	if (n >= classHierarchyDescriptor.numBaseClasses - 1)
+	if (n >= classHierarchyDescriptor.numBaseClasses)
 	{
 		dprintf("can't get index %d because there are only %d base classes!\n", n, classHierarchyDescriptor.numBaseClasses);
 		return RTTIBaseClassDescriptor();
@@ -150,7 +147,7 @@ void RTTI::PrintBaseClasses()
 {
 	for (size_t i = 0; i < classHierarchyDescriptor.numBaseClasses; i++)
 	{
-		auto baseClass = m_baseClassDescriptors[i];
+		auto baseClass = GetBaseClassDescriptor(i);
 		auto baseClassType = m_baseClassTypeDescriptors[i];
 		auto baseClassName = m_baseClassTypeNames[i];
 
@@ -158,4 +155,9 @@ void RTTI::PrintBaseClasses()
 		baseClass.Print();
 		dprintf("\n");
 	}
+}
+
+bool RTTI::IsValid()
+{
+	return m_isValid;
 }

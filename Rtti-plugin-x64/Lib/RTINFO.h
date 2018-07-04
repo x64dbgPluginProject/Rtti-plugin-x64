@@ -45,19 +45,6 @@ inline void PMD::Print()
 	dprintf("        mdisp: %d  pdisp: %d  vdisp: %d\n", mdisp, pdisp, vdisp);
 }
 
-//inline duint PMD::GetOffset(char* pPmd)
-//{
-//	char* pThis = pPmd;
-//	pThis += mdisp;
-//	if (pdisp != -1)
-//	{
-//		char *vbtable = pThis + pdisp;
-//		pThis += *(duint*)(vbtable + vdisp);
-//	}
-//
-//	return pThis;
-//}
-
 struct TypeDescriptor {
 	duint pVFTable;
 	duint spare;

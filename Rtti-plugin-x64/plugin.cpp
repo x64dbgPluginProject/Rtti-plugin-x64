@@ -5,6 +5,22 @@
 
 #define RTTI_COMMAND "rtti"
 
+// Checks the settings and auto-labels the enabled ones
+bool AutoLabel(RTTI rtti)
+{
+	if (!rtti.IsValid())
+		return false;
+
+	if (settings.auto_label_vftable)
+	{
+		string label = "vftable_" + rtti.name;
+		if (!DbgSetLabelAt(rtti.m_vftable, label.c_str()))
+			return false;
+	}
+
+	return true;
+}
+
 // Get the current window selection, aligns it to 4 byte boundaries and dumps it
 void DumpRttiWindow(int hWindow)
 {
@@ -13,12 +29,16 @@ void DumpRttiWindow(int hWindow)
 		dputs("You need to be debugging to use this command");
 		return;
 	}
+
 	SELECTIONDATA sel;
 	GuiSelectionGet(hWindow, &sel);
 	duint alignedStart = sel.start - (sel.start % (sizeof duint));
 
-	RTTI klass(alignedStart);
-	klass.PrintVerbose();
+	char cmd[256] = { 0 };
+	sprintf_s(cmd, "%s %X", RTTI_COMMAND, alignedStart);
+	
+	// Run the cbRttiCommand
+	DbgCmdExec(cmd);
 }
 
 // 'rtti <addr>' command
@@ -47,12 +67,17 @@ static bool cbRttiCommand(int argc, char* argv[])
 			return false;
 		}
 
-		RTTI klass(addr);
+		RTTI rtti(addr);
 		
-		if (klass.)
-		klass.PrintVerbose();
+		if (rtti.IsValid())
+		{
+			AutoLabel(rtti);
+			rtti.PrintVerbose();
+		}
+		else
+			dprintf("No RTTI information found for address %p\n", addr);
 	}
-
+	
 	return true;
 }
 
