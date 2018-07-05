@@ -31,7 +31,9 @@ public:
 	TypeDescriptor GetBaseTypeDescriptor(size_t n);
 	string GetBaseClassName(size_t n);
 	
-	duint m_vftable = 0;
+	duint GetVFTable();
+
+	duint GetBaseClassOffset(size_t n);
 
 	void PrintVerbose();
 	void PrintBaseClasses();
@@ -41,6 +43,7 @@ private:
 	bool m_isValid = false;		// Is true if RTTI information is present
 
 	duint m_this = 0;
+	duint m_vftable = 0;
 	duint m_completeObjectLocator = 0;
 	duint m_typeDescriptor = 0;
 	duint m_classHierarchyDescriptor = 0;

@@ -13,9 +13,15 @@ bool AutoLabel(RTTI rtti)
 
 	if (settings.auto_label_vftable)
 	{
-		string label = "vftable_" + rtti.name;
-		if (!DbgSetLabelAt(rtti.m_vftable, label.c_str()))
-			return false;
+		char sz_vftable_label[MAX_COMMENT_SIZE] = "";
+
+		// If there isn't a label already there
+		if (!DbgGetLabelAt(rtti.GetVFTable(), SEG_DEFAULT, sz_vftable_label))
+		{
+			string label = rtti.name + "_vftable";
+			if (!DbgSetLabelAt(rtti.GetVFTable(), label.c_str()))
+				return false;
+		}
 	}
 
 	return true;

@@ -20,24 +20,17 @@ inline void vftable_t::Print()
 	dprintf("    pCompleteObjectLocator: %p\n", pCompleteObjectLocator);
 }
 
-/*
-	//char* pThis; struct PMD pmd;
-	pThis+=pmd.mdisp;
-	if (pmd.pdisp!=-1)
-	{
-		char *vbtable = pThis+pmd.pdisp;
-		pThis += *(int*)(vbtable+pmd.vdisp);
-	}
-*/
-
 struct PMD
 {
-	int mdisp;  //member displacement
-	int pdisp;  //vbtable displacement
-	int vdisp;  //displacement inside vbtable
+	// A vbtable (virtual base class table) is generated for multiple virtual inheritance.
+	// Because it is sometimes necessary to upclass (casting to base classes), the exact location of
+	// the base class needs to be determined.
+
+	int mdisp;  //member displacement, vftable offset (if PMD.pdisp is -1)
+	int pdisp;  //vbtable displacement, vbtable offset (-1: vftable is at displacement PMD.mdisp inside the class)
+	int vdisp;  //displacement inside vbtable, displacement of the base class vftable pointer inside the vbtable
 
 	void Print();
-	//duint GetOffset(char* pPmd);
 };
 
 inline void PMD::Print() 
@@ -46,17 +39,17 @@ inline void PMD::Print()
 }
 
 struct TypeDescriptor {
-	duint pVFTable;
+	duint pVFTable;					// Always points to the type_info descriptor
 	duint spare;
 	char skip;						// Skip the period before the mangled name
 	char sz_decorated_name[256];
 
-	void Print(int spaces = 2);
+	void Print();
 };
 
-inline void TypeDescriptor::Print(int spaces)
+inline void TypeDescriptor::Print()
 {
-	//dprintf("    pVFTable: %p\n", pVFTable);
+	dprintf("    pVFTable: %p\n", pVFTable);
 	//dprintf("    spare: %p\n", spare);
 	dprintf("    sz_decorated_name: %s\n", sz_decorated_name);
 }
@@ -85,7 +78,7 @@ struct RTTIClassHierarchyDescriptor
 	duint signature;								//always zero?
 	duint attributes;								//bit 0 set = multiple inheritance, bit 1 set = virtual inheritance
 	duint numBaseClasses;							//number of classes in pBaseClassArray
-	struct RTTIBaseClassArray* pBaseClassArray;
+	struct RTTIBaseClassArray* pBaseClassArray;		// Index 0 of this array is always 'this' class first
 
 	void Print();
 };

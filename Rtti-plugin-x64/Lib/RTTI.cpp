@@ -117,6 +117,28 @@ string RTTI::GetBaseClassName(size_t n)
 	return m_baseClassTypeNames[n];
 }
 
+duint RTTI::GetVFTable()
+{
+	return m_vftable;
+}
+
+// Returns the address that the base class resides 
+duint RTTI::GetBaseClassOffset(size_t n)
+{
+	char* pThis = (char*)m_this;
+
+	auto baseClassDesc = GetBaseClassDescriptor(n);
+	
+	pThis += pmd.mdisp;
+	if (pmd.pdisp != -1)
+	{
+		char *vbtable = pThis + pmd.pdisp;
+		pThis += *(int*)(vbtable + pmd.vdisp);
+	}
+
+	return duint();
+}
+
 void RTTI::PrintVerbose()
 {
 	if (!m_isValid)
