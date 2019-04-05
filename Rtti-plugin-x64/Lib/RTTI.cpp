@@ -123,21 +123,21 @@ duint RTTI::GetVFTable()
 }
 
 // Returns the address that the base class resides 
-duint RTTI::GetBaseClassOffset(size_t n)
-{
-	char* pThis = (char*)m_this;
-
-	auto baseClassDesc = GetBaseClassDescriptor(n);
-	
-	pThis += pmd.mdisp;
-	if (pmd.pdisp != -1)
-	{
-		char *vbtable = pThis + pmd.pdisp;
-		pThis += *(int*)(vbtable + pmd.vdisp);
-	}
-
-	return duint();
-}
+//duint RTTI::GetBaseClassOffset(size_t n)
+//{
+//	char* pThis = (char*)m_this;
+//
+//	auto baseClassDesc = GetBaseClassDescriptor(n);
+//	
+//	pThis += pmd.mdisp;
+//	if (pmd.pdisp != -1)
+//	{
+//		char *vbtable = pThis + pmd.pdisp;
+//		pThis += *(int*)(vbtable + pmd.vdisp);
+//	}
+//
+//	return duint();
+//}
 
 void RTTI::PrintVerbose()
 {
