@@ -35,7 +35,8 @@ public:
 
 	bool HasVbTable();
 
-	void PrintVerbose();
+	void PrintVerboseToLog();
+	void Print();
 	void PrintBaseClasses();
 	bool IsValid();
 

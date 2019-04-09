@@ -52,7 +52,8 @@
 
 #define Cmd(x) DbgCmdExecDirect(x)
 #define Eval(x) DbgValFromString(x)
-#define dprintf(x, ...) _plugin_logprintf("[" PLUGIN_NAME "] " x, __VA_ARGS__)
+//#define dprintf(x, ...) _plugin_logprintf("[" PLUGIN_NAME "] " x, __VA_ARGS__)
+#define dprintf(x, ...) _plugin_logprintf(x, __VA_ARGS__)
 #define dputs(x) _plugin_logprintf("[" PLUGIN_NAME "] %s\n", x)
 #define PLUG_EXPORT extern "C" __declspec(dllexport)
 

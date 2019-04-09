@@ -166,7 +166,53 @@ bool RTTI::HasVbTable()
 	return m_nBaseClassOffsets != 0;
 }
 
-void RTTI::PrintVerbose()
+void RTTI::Print()
+{
+	if (!m_isValid)
+		return;
+
+	string result = name.c_str();
+
+	if (classHierarchyDescriptor.numBaseClasses > 1)
+	{
+		result.append("  :  ");
+
+		// Base Classes
+		for (size_t i = 1; i < classHierarchyDescriptor.numBaseClasses; i++)
+		{
+			auto baseClass = GetBaseClassDescriptor(i);
+			auto baseClassType = m_baseClassTypeDescriptors[i];
+			auto baseClassName = m_baseClassTypeNames[i];
+			auto baseClassOffset = m_baseClassOffsets[i];
+
+			result.append(baseClassName.c_str() + string(" "));
+
+			// Print offsets
+			result.append("(+");
+
+			char hexStr[32] = { 0 };
+			sprintf_s(hexStr, sizeof(hexStr), "%X", GetBaseClassAddressFromThis(i));
+			
+			result.append(hexStr);
+			result.append(")");
+
+			bool isLastClass = i == classHierarchyDescriptor.numBaseClasses - 1;
+			if (!isLastClass)
+				result.append(",");
+
+			result.append(" ");
+
+			//dprintf("    BaseClassDescriptor[%d]: %p - %s\n", i, m_BaseClassArray[i], baseClassName.c_str());
+			//baseClass.Print();
+			//dprintf("    ClassOffset: + 0x%X (%p)\n", GetBaseClassAddressFromThis(i), GetBaseClassAddress(i));
+			//dprintf("\n");
+		}
+	}
+
+	dprintf("%s\n", result.c_str());
+}
+
+void RTTI::PrintVerboseToLog()
 {
 	if (!m_isValid)
 		return;
@@ -189,9 +235,7 @@ void RTTI::PrintVerbose()
 	classHierarchyDescriptor.Print();	
 	dprintf("\n");
 	PrintBaseClasses();
-
-	// Print the name so it appears in the bottom status bar
-	dprintf("%s\n", name.c_str());
+	dprintf("=====================================================================================\n");
 }
 
 void RTTI::PrintBaseClasses()
