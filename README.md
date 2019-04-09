@@ -6,12 +6,15 @@ There's a wealth of information present in RTTI that's of use when reverse engin
 
 ## Installation
 1. Compile the solution in Release mode for x86 and x64.
-2. Copy 'Rtti.dp32'in '.\Rtti-plugin-x64\Release' to your \x64dbg\release\x32\plugins directory.
-3. Copy 'Rtti.dp64'in ' .\Rtti-plugin-x64\x64\Release' to your \x64dbg\release\x64\plugins directory.
+2. Copy 'Rtti.dp32' from the /bin to your \x64dbg\release\x32\plugins directory.
+3. Copy 'Rtti.dp64' from the /bin to your \x64dbg\release\x64\plugins directory.
 
 ## Usage
 
 ![Rtti Usage image](Images/Rtti.jpg)
+
+## Tests
+There is an included project called 'ClassRTTIPluginTest'.  You can compile these and use them to test the functionality.  On compilation these are copied to the /bin directory.
 
 ## Reporting Crashes
 
