@@ -33,8 +33,6 @@ public:
 	
 	duint GetVFTable();
 
-	bool HasVbTable();
-
 	void PrintVerboseToLog();
 	void Print();
 	void PrintBaseClasses();

@@ -82,8 +82,8 @@ bool RTTI::GetRTTI()
 		if (m_baseClassDescriptors[i].where.pdisp != -1)
 		{
 			// The docs aren't very clear here.
-			// The assumption we're making is if a BaseClassDescriptor's pdisp member doesn't == -1, then all the pdisp fields will be the same
-			// If a class can have multiple vbtables this information won't be correct.
+			// The pdisp field is the offset of the vbtable from this
+			// Inside the vbtable we read at vdisp to get the final offset from the vbtable of the class
 			m_vbtable[i] = (duint)ADDPTR(m_this, m_baseClassDescriptors[i].where.pdisp);
 
 			duint pdisp = m_baseClassDescriptors[i].where.pdisp;
@@ -161,11 +161,6 @@ duint RTTI::GetVFTable()
 	return m_vftable;
 }
 
-bool RTTI::HasVbTable()
-{
-	return m_nBaseClassOffsets != 0;
-}
-
 void RTTI::Print()
 {
 	if (!m_isValid)
@@ -177,7 +172,9 @@ void RTTI::Print()
 	{
 		result.append("  :  ");
 
-		// Base Classes
+		// Base Class formatting
+		// Appends each base class in this format
+		// 'ClassA (+12), ClassB (+1C)'
 		for (size_t i = 1; i < classHierarchyDescriptor.numBaseClasses; i++)
 		{
 			auto baseClass = GetBaseClassDescriptor(i);
@@ -201,11 +198,6 @@ void RTTI::Print()
 				result.append(",");
 
 			result.append(" ");
-
-			//dprintf("    BaseClassDescriptor[%d]: %p - %s\n", i, m_BaseClassArray[i], baseClassName.c_str());
-			//baseClass.Print();
-			//dprintf("    ClassOffset: + 0x%X (%p)\n", GetBaseClassAddressFromThis(i), GetBaseClassAddress(i));
-			//dprintf("\n");
 		}
 	}
 
