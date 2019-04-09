@@ -75,19 +75,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <TargetExt>.dp32</TargetExt>
-    <OutDir>$(SolutionDir)bin\x32\</OutDir>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <TargetExt>.dp32</TargetExt>
-    <OutDir>$(SolutionDir)bin\x32d\</OutDir>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetExt>.dp64</TargetExt>
-    <OutDir>$(SolutionDir)bin\x64\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetExt>.dp64</TargetExt>
-    <OutDir>$(SolutionDir)bin\x64d\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -99,13 +99,15 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "D:\RE\Debuggers\x64dbg\release\x32\plugins\" </Command>
+      <Command>xcopy "$(TargetPath)*" "$(SolutionDir)bin\" /y
+xcopy "$(TargetPath)*" "D:\RE\Debuggers\x64dbg\release\x32\plugins\" /y</Command>
+      <Message>Copied to /bin folder</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -128,7 +130,8 @@
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "D:\RE\Debuggers\x64dbg\release\x32\plugins\" </Command>
+      <Command>xcopy "$(TargetPath)*" "$(SolutionDir)bin\" /y
+xcopy "$(TargetPath)*" "D:\RE\Debuggers\x64dbg\release\x64\plugins\" /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -141,13 +144,15 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "D:\RE\Debuggers\x64dbg\release\x64\plugins\"</Command>
+      <Command>xcopy "$(TargetPath)*" "$(SolutionDir)bin\" /y
+xcopy "$(TargetPath)*" "D:\RE\Debuggers\x64dbg\release\x64\plugins\" /y</Command>
+      <Message>Copied to /bin folder</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -170,7 +175,8 @@
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "D:\RE\Debuggers\x64dbg\release\x64\plugins\"</Command>
+      <Command>xcopy "$(TargetPath)*" "$(SolutionDir)bin\" /y
+xcopy "$(TargetPath)*" "D:\RE\Debuggers\x64dbg\release\x64\plugins\" /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

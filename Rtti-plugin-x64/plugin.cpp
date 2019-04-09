@@ -41,7 +41,7 @@ void DumpRttiWindow(int hWindow)
 	duint alignedStart = sel.start - (sel.start % (sizeof duint));
 
 	char cmd[256] = { 0 };
-	sprintf_s(cmd, "%s %X", RTTI_COMMAND, alignedStart);
+	sprintf_s(cmd, "%s %zX", RTTI_COMMAND, alignedStart);
 	
 	// Run the cbRttiCommand
 	DbgCmdExec(cmd);
@@ -65,7 +65,7 @@ static bool cbRttiCommand(int argc, char* argv[])
 	else if (argc == 2)
 	{
 		duint addr = 0;
-		int numFieldsAssigned = sscanf_s(argv[1], "%x", &addr);
+		int numFieldsAssigned = sscanf_s(argv[1], "%zx", &addr);
 
 		if (numFieldsAssigned != 1)
 		{

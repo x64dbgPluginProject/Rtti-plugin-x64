@@ -33,15 +33,16 @@ public:
 	
 	duint GetVFTable();
 
-	duint GetBaseClassOffset(size_t n);
+	bool HasVbTable();
 
 	void PrintVerbose();
 	void PrintBaseClasses();
 	bool IsValid();
 
 private:
+	duint* m_fakeClass = nullptr;
 	bool m_isValid = false;		// Is true if RTTI information is present
-
+	
 	duint m_this = 0;
 	duint m_vftable = 0;
 	duint m_completeObjectLocator = 0;
@@ -49,15 +50,31 @@ private:
 	duint m_classHierarchyDescriptor = 0;
 	duint m_pBaseClassArray = 0;
 
-	bool GetRTTI(duint addr);
+	bool GetRTTI();
 	string Demangle(char * sz_name);
 
 	// The classHierarhcyDescriptor contains information for all the base classes of 'this'.  
 	// We need to copy the information from the debugger to these
 	RTTIBaseClassDescriptor m_baseClassDescriptors[MAX_BASE_CLASSES];
+	
+	// These refer to the position of the member inside the base class, this is used
+	// for multiple, virtual inheritance, this information is parsed from the vbtable if pdisp != -1
+	duint m_nBaseClassOffsets = 0;
+	duint m_vbtable[MAX_BASE_CLASSES] = { 0 };
+	duint m_baseClassOffsets[MAX_BASE_CLASSES] = { 0 };
+
 	TypeDescriptor m_baseClassTypeDescriptors[MAX_BASE_CLASSES];
 	string m_baseClassTypeNames[MAX_BASE_CLASSES];
 	duint m_BaseClassArray[MAX_BASE_CLASSES] = { 0 };
+
+	// Methods
+	duint GetVbtable(size_t idx);
+	duint GetBaseClassOffset(size_t idx);
+	duint GetBaseClassAddress(size_t idx);
+	
+	// This is for printing so you can easily see where the base class is from _this_
+	// Because these are calculated from the base of the vbtable, it's hard to know automatically where that is
+	duint GetBaseClassAddressFromThis(size_t idx);
 };
 
 void DumpRttiWindow(int hWindow);

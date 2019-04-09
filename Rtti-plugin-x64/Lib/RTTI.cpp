@@ -14,17 +14,21 @@ RTTI::RTTI(duint addr)
 {
 	m_this = addr;
 
-	m_isValid = GetRTTI(m_this);
+	m_isValid = GetRTTI();
 }
 
-bool RTTI::GetRTTI(duint addr)
+bool RTTI::GetRTTI()
 {
-	if (!DbgMemRead(m_this, &m_vftable, sizeof(duint)))
+	duint addr = m_this;
+
+	// Read the value at this to m_vftable
+	if (!DbgMemRead(addr, &m_vftable, sizeof(duint)))
 		return false;
 
 	// Read offset at the vftable -4 is a pointer to a complete object locator
 	addr = (duint)SUBPTR(m_vftable, sizeof(duint));
 
+	// Read the entire vftable
 	if (!DbgMemRead(addr, &vftable, sizeof(vftable_t)))
 		return false;
 
@@ -70,6 +74,41 @@ bool RTTI::GetRTTI(duint addr)
 			return false;
 
 		m_baseClassTypeNames[i] = Demangle(m_baseClassTypeDescriptors[i].sz_decorated_name);
+
+		// Assign the vbtable entry
+		m_vbtable[i] = m_this;
+		m_baseClassOffsets[i] = 0;
+
+		if (m_baseClassDescriptors[i].where.pdisp != -1)
+		{
+			// The docs aren't very clear here.
+			// The assumption we're making is if a BaseClassDescriptor's pdisp member doesn't == -1, then all the pdisp fields will be the same
+			// If a class can have multiple vbtables this information won't be correct.
+			m_vbtable[i] = (duint)ADDPTR(m_this, m_baseClassDescriptors[i].where.pdisp);
+
+			duint pdisp = m_baseClassDescriptors[i].where.pdisp;
+			duint vdisp = m_baseClassDescriptors[i].where.vdisp;			
+			
+			duint pMemberOffsets = 0;
+			duint memberOffsets[MAX_BASE_CLASSES] = { 0 };
+
+			// Read the value at the vdisp to find where the class is off the vbtable of this class
+			//duint vbtable = 0;
+			if (!DbgMemRead(m_vbtable[i], &pMemberOffsets, sizeof(pMemberOffsets)))
+			{
+				dprintf("Problem reading the vbtable.\n");
+				continue;
+			}
+
+			if (!DbgMemRead(pMemberOffsets, &memberOffsets, sizeof(memberOffsets)))
+			{
+				dprintf("Problem reading the member offsets.\n");
+				continue;
+			}
+
+			m_baseClassOffsets[i] = memberOffsets[i];
+			m_nBaseClassOffsets++;
+		}
 	}
 
 	return true;
@@ -122,22 +161,10 @@ duint RTTI::GetVFTable()
 	return m_vftable;
 }
 
-// Returns the address that the base class resides 
-//duint RTTI::GetBaseClassOffset(size_t n)
-//{
-//	char* pThis = (char*)m_this;
-//
-//	auto baseClassDesc = GetBaseClassDescriptor(n);
-//	
-//	pThis += pmd.mdisp;
-//	if (pmd.pdisp != -1)
-//	{
-//		char *vbtable = pThis + pmd.pdisp;
-//		pThis += *(int*)(vbtable + pmd.vdisp);
-//	}
-//
-//	return duint();
-//}
+bool RTTI::HasVbTable()
+{
+	return m_nBaseClassOffsets != 0;
+}
 
 void RTTI::PrintVerbose()
 {
@@ -163,6 +190,8 @@ void RTTI::PrintVerbose()
 	dprintf("\n");
 	PrintBaseClasses();
 
+	// Print the name so it appears in the bottom status bar
+	dprintf("%s\n", name.c_str());
 }
 
 void RTTI::PrintBaseClasses()
@@ -172,11 +201,46 @@ void RTTI::PrintBaseClasses()
 		auto baseClass = GetBaseClassDescriptor(i);
 		auto baseClassType = m_baseClassTypeDescriptors[i];
 		auto baseClassName = m_baseClassTypeNames[i];
+		auto baseClassOffset = m_baseClassOffsets[i];
 
 		dprintf("    BaseClassDescriptor[%d]: %p - %s\n", i, m_BaseClassArray[i], baseClassName.c_str());
 		baseClass.Print();
+		dprintf("    ClassOffset: + 0x%X (%p)\n", GetBaseClassAddressFromThis(i), GetBaseClassAddress(i));
 		dprintf("\n");
 	}
+}
+
+duint RTTI::GetVbtable(size_t idx)
+{
+	if (idx > (sizeof(m_vbtable) / MAX_BASE_CLASSES))
+		return 0;
+
+	return m_vbtable[idx];
+}
+
+duint RTTI::GetBaseClassOffset(size_t idx)
+{
+	if (idx > (sizeof(m_baseClassOffsets) / MAX_BASE_CLASSES))
+		return 0;
+
+	return m_baseClassOffsets[idx];
+}
+
+duint RTTI::GetBaseClassAddress(size_t idx)
+{
+	duint offset = GetBaseClassOffset(idx);
+	duint vbtable = GetVbtable(idx);
+	
+	duint addr = (duint)ADDPTR(vbtable, offset);
+	return addr;
+}
+
+duint RTTI::GetBaseClassAddressFromThis(size_t idx)
+{
+	duint vbtable = GetVbtable(idx);
+	duint offsetToThis = (duint)SUBPTR(vbtable, m_this);
+
+	return (duint)ADDPTR(offsetToThis, GetBaseClassOffset(idx));
 }
 
 bool RTTI::IsValid()
