@@ -11,10 +11,12 @@ There's a wealth of information present in RTTI that's of use when reverse engin
 
 ## Usage
 
-![Rtti Usage image](Images/Rtti.jpg)
+![Rtti Usage image](images/Rtti.jpg)
 
 ## Tests
 There is an included project called 'ClassRTTIPluginTest'.  You can compile these and use them to test the functionality.  On compilation these are copied to the /bin directory.
+
+The tests have breakpoints after the creation of the class, so open the tests in x64dbg, and run until you hit the breakpoint.
 
 ## Reporting Crashes
 
@@ -28,3 +30,5 @@ There are references for finding Rtti information included in the /docs director
 Paul Vincent Sabanal (Researcher, IBM Internet Security Systems X-Force R&D)
 
 Mark Vincent Yason (Researcher, IBM Internet Security Systems X-Force R&D)
+
+[Visual C++ RTTI Inspection](https://blog.quarkslab.com/visual-c-rtti-inspection.html)

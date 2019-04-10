@@ -37,6 +37,25 @@ bool RTTI::GetRTTI()
 	if (!DbgMemRead(m_completeObjectLocator, &completeObjectLocator, sizeof(RTTICompleteObjectLocator)))
 		return false;
 
+	dprintf("CompleteObjectLocator information\n");
+	dprintf("completeObjectLocator.signature: %d\n", completeObjectLocator.signature);
+	dprintf("completeObjectLocator.offset   : %d\n", completeObjectLocator.offset);
+	dprintf("completeObjectLocator.cdOffset : %zX\n", completeObjectLocator.cdOffset);
+	dprintf("completeObjectLocator.pTypeDescriptor : %p\n", completeObjectLocator.pTypeDescriptor);
+	dprintf("completeObjectLocator.pClassDescriptor : %p\n", completeObjectLocator.pClassDescriptor);
+
+
+#ifdef _WIN64
+	// In x64 the CompleteObjectLocator information is 
+	duint size = 0;
+	duint rdataSection = DbgMemFindBaseAddr(m_completeObjectLocator, &size);
+
+	// Set the last four digits to zeros   returns the .rdata section, we need the full image base + offset to get the class name
+	//baseAddress = ((baseAddress) >> 16) << 16;
+
+	dprintf("baseAddress @: %p\n", rdataSection);
+#endif
+
 	// Read the TypeDescriptor
 	m_typeDescriptor = (duint)completeObjectLocator.pTypeDescriptor;
 	if (!DbgMemRead(m_typeDescriptor, &typeDescriptor, sizeof(TypeDescriptor)))
@@ -188,7 +207,7 @@ void RTTI::Print()
 			result.append("(+");
 
 			char hexStr[32] = { 0 };
-			sprintf_s(hexStr, sizeof(hexStr), "%X", GetBaseClassAddressFromThis(i));
+			sprintf_s(hexStr, sizeof(hexStr), "%zX", GetBaseClassAddressFromThis(i));
 			
 			result.append(hexStr);
 			result.append(")");

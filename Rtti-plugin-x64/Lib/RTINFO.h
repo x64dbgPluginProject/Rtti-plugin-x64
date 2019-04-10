@@ -73,6 +73,7 @@ inline void RTTIBaseClassDescriptor::Print()
 	dprintf("      attributes: %X\n", attributes);
 }
 
+// DWORD always
 struct RTTIClassHierarchyDescriptor
 {
 	duint signature;								//always zero?
