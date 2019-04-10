@@ -103,9 +103,9 @@ inline void RTTIClassHierarchyDescriptor::Print()
 
 struct RTTICompleteObjectLocator
 {
-	duint signature;								//always zero ?
-	duint offset;									//offset of this vtable in the complete class
-	duint cdOffset;									//constructor displacement offset
+	DWORD signature;								//always zero ?  (x64 always 1?)
+	DWORD offset;									//offset of this vtable in the complete class
+	DWORD cdOffset;									//constructor displacement offset
 	TypeDescriptor* pTypeDescriptor;				//TypeDescriptor of the complete class
 	RTTIClassHierarchyDescriptor* pClassDescriptor; //describes inheritance hierarchy
 

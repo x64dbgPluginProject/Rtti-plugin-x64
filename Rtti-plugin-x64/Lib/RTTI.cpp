@@ -40,7 +40,7 @@ bool RTTI::GetRTTI()
 	dprintf("CompleteObjectLocator information\n");
 	dprintf("completeObjectLocator.signature: %d\n", completeObjectLocator.signature);
 	dprintf("completeObjectLocator.offset   : %d\n", completeObjectLocator.offset);
-	dprintf("completeObjectLocator.cdOffset : %zX\n", completeObjectLocator.cdOffset);
+	dprintf("completeObjectLocator.cdOffset : %d\n", completeObjectLocator.cdOffset);
 	dprintf("completeObjectLocator.pTypeDescriptor : %p\n", completeObjectLocator.pTypeDescriptor);
 	dprintf("completeObjectLocator.pClassDescriptor : %p\n", completeObjectLocator.pClassDescriptor);
 
