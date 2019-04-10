@@ -95,8 +95,8 @@ bool RTTI::GetRTTI()
 		m_baseClassTypeNames[i] = Demangle(m_baseClassTypeDescriptors[i].sz_decorated_name);
 
 		// Assign the vbtable entry
-		m_vbtable[i] = m_this;
-		m_baseClassOffsets[i] = 0;
+		m_vbtable[i] = (duint)ADDPTR(m_this, m_baseClassDescriptors[i].where.mdisp);
+		m_baseClassOffsets[i] =  0;
 
 		if (m_baseClassDescriptors[i].where.pdisp != -1)
 		{
