@@ -22,64 +22,111 @@ RTTI::RTTI(duint addr)
 	m_isValid = GetRTTI();
 }
 
+duint RTTI::GetAddressVftable()
+{
+	duint vftable = 0;
+
+	// Read the value at this to m_vftable
+	if (!DbgMemRead(m_this, &vftable, sizeof(duint)))
+		return 0;
+
+	return vftable;
+}
+
+bool RTTI::GetVftable()
+{
+	duint vftable = GetAddressVftable();
+
+	if (vftable == 0)
+		return false;
+
+	// Read offset at the vftable -4 is a pointer to a complete object locator
+	duint pCompleteObjectLocator = (duint)SUBPTR(vftable, sizeof(duint));
+
+	// Read the entire vftable
+	if (!DbgMemRead(pCompleteObjectLocator, &m_vftable, sizeof(vftable_t)))
+		return false;
+
+	return true;
+}
+
+bool RTTI::GetCompleteObjectLocator()
+{
+	// Read the RTTICompleteObjectLocator
+	if (!DbgMemRead((duint)m_vftable.pCompleteObjectLocator, &m_completeObjectLocator, sizeof(RTTICompleteObjectLocator)))
+		return false;
+
+	return true;
+}
+
+bool RTTI::GetTypeDescriptor()
+{
+	duint pTypeDescriptor = m_completeObjectLocator.pTypeDescriptor;
+
+	// Read the TypeDescriptor
+	if (!DbgMemRead(pTypeDescriptor, &m_typeDescriptor, sizeof(TypeDescriptor)))
+		return false;
+
+	return true;
+}
+
 bool RTTI::GetRTTI()
 {
 	duint addr = m_this;
 	duint moduleBase;
 
-	// Read the value at this to m_vftable
-	if (!DbgMemRead(addr, &m_vftable, sizeof(duint)))
+	dprintf("=====================================================================================\n");
+
+	// Parse vftable
+	if (GetVftable() == false)
+	{
+		dprintf("Couldn't get the vftable.\n");
 		return false;
+	}
+	duint vftable = GetAddressVftable();
+	dprintf("vftable: %p\n", vftable);
+	m_vftable.Print();
 
-	// Read offset at the vftable -4 is a pointer to a complete object locator
-	addr = (duint)SUBPTR(m_vftable, sizeof(duint));
-
-	// Read the entire vftable
-	if (!DbgMemRead(addr, &vftable, sizeof(vftable_t)))
+	// Parse CompleteObjectLocator
+	if (GetCompleteObjectLocator() == false)
+	{
+		dprintf("Couldn't find the CompleteObjectLocator.\n");
 		return false;
+	}
+	m_completeObjectLocator.Print();
 
-	// Read the RTTICompleteObjectLocator
-	m_completeObjectLocator = (duint)vftable.pCompleteObjectLocator;
-	if (!DbgMemRead(m_completeObjectLocator, &completeObjectLocator, sizeof(RTTICompleteObjectLocator)))
+	moduleBase = GetBaseAddress((duint)m_vftable.pCompleteObjectLocator);
+
+	// Parse TypeDescriptor
+	if (GetTypeDescriptor() == false)
+	{
+		dprintf("Couldn't parse the TypeDescriptor.\n");
 		return false;
+	}
+	m_typeDescriptor.Print();
 
-	moduleBase = GetBaseAddress(m_completeObjectLocator);
-	dprintf("moduleBase: %p\n\n", moduleBase);
-
-	dprintf("m_completeObjectLocator: %p\n", m_completeObjectLocator);
-	dprintf("signature: %p\n", completeObjectLocator.signature);
-	dprintf("offset: %p\n", completeObjectLocator.offset);
-	dprintf("cdOffset: %p\n", completeObjectLocator.cdOffset);
-
-#ifdef _WIN64
-
-	// In x64 the CompleteObjectLocator is different, this is encapsulated in the RTTICompleteObjectLocator .x64 field
-	// The TypeDescriptor and ClassDescriptors are offsets from the base of the module, so to get their final address 
-	// We add module base + (DWORD)offset_typeDescriptor to it.
-
-	// Offset from the base of the module to the typeDescriptor
-	duint offset_typeDescriptor = completeObjectLocator.x64_typeDescriptor.offset;
-	duint offset_classDescriptor = completeObjectLocator.x64_classHierarchyDescriptor.offset;
-
-	m_typeDescriptor = (duint)ADDPTR(moduleBase, offset_typeDescriptor);
-	m_classHierarchyDescriptor = (duint)ADDPTR(moduleBase, offset_classDescriptor);
-
-#else
-
-	m_typeDescriptor = (duint)completeObjectLocator.pTypeDescriptor;
-	m_classHierarchyDescriptor = (duint)completeObjectLocator.pClassHierarchyDescriptor;
-
-#endif
-
-	dprintf("m_typeDescriptor: %p\n", m_typeDescriptor);
-	dprintf("m_classHierarchyDescriptor: %p\n", m_classHierarchyDescriptor);
-
-	// Read the TypeDescriptor
-	if (!DbgMemRead(m_typeDescriptor, &typeDescriptor, sizeof(TypeDescriptor)))
-		return false;
+//#ifdef _WIN64
+//
+//	// In x64 the CompleteObjectLocator is different, this is encapsulated in the RTTICompleteObjectLocator .x64 field
+//	// The TypeDescriptor and ClassDescriptors are offsets from the base of the module, so to get their final address 
+//	// We add module base + (DWORD)offset_typeDescriptor to it.
+//
+//	// Offset from the base of the module to the typeDescriptor
+//	duint offset_typeDescriptor = completeObjectLocator.x64_pTypeDescriptor.offset;
+//	duint offset_classDescriptor = completeObjectLocator.x64_pClassHierarchyDescriptor.offset;
+//
+//	m_typeDescriptor = (duint)ADDPTR(moduleBase, offset_typeDescriptor);
+//	m_classHierarchyDescriptor = (duint)ADDPTR(moduleBase, offset_classDescriptor);
+//
+//#else
+//
+//	m_typeDescriptor = (duint)m_completeObjectLocator.pTypeDescriptor;
+//	m_classHierarchyDescriptor = (duint)m_completeObjectLocator.pClassHierarchyDescriptor;
+//
+//#endif
 
 	// Demangle the name and copy it 
-	name = Demangle(typeDescriptor.sz_decorated_name);
+	name = Demangle(m_typeDescriptor.sz_decorated_name);
 
 	// Read the RTTIClassHierarchyDescriptor
 	if (!DbgMemRead(m_classHierarchyDescriptor, &classHierarchyDescriptor, sizeof(RTTIClassHierarchyDescriptor)))
@@ -88,7 +135,7 @@ bool RTTI::GetRTTI()
 	dprintf("numBaseClasses: %p\n", classHierarchyDescriptor.numBaseClasses);
 
 #ifdef _WIN64
-	duint offset_pBaseClassArray = classHierarchyDescriptor.x64.offset_baseClassArray;
+	duint offset_pBaseClassArray = classHierarchyDescriptor.x64_pBaseClassArray.offset;
 	m_pBaseClassArray = (duint)ADDPTR(moduleBase, offset_pBaseClassArray);
 #else
 	m_pBaseClassArray = (duint)classHierarchyDescriptor.pBaseClassArray;
@@ -123,9 +170,21 @@ bool RTTI::GetRTTI()
 		if (!DbgMemRead(pBaseClassDescriptor, &m_baseClassDescriptors[i], sizeof(RTTIBaseClassDescriptor)))
 			return false;
 
+		dprintf("m_baseClassDescriptors[%d]: %X\n", m_baseClassDescriptors[i]);
+
+#ifdef _WIN64
+		addr = (duint)ADDPTR(moduleBase, m_baseClassDescriptors[i].pTypeDescriptor);
+#else
+		addr = (duint)m_baseClassDescriptors[i].pTypeDescriptor;
+#endif
+
+		dprintf("m_baseClassDescriptors[%d].pTypeDescriptor: %p\n", i, m_baseClassDescriptors[i].pTypeDescriptor);
+
 		// Populate the TypeDescriptors for the Base Classes as well
-		if (!DbgMemRead((duint)m_baseClassDescriptors[i].pTypeDescriptor, &m_baseClassTypeDescriptors[i], sizeof(TypeDescriptor)))
+		if (!DbgMemRead(addr, &m_baseClassTypeDescriptors[i], sizeof(TypeDescriptor)))
 			return false;
+
+		dprintf("m_baseClassTypeDescriptors[%d]: %p\n", i, m_baseClassTypeDescriptors);
 
 		m_baseClassTypeNames[i] = Demangle(m_baseClassTypeDescriptors[i].sz_decorated_name);
 
@@ -210,10 +269,6 @@ string RTTI::GetBaseClassName(size_t n)
 	return m_baseClassTypeNames[n];
 }
 
-duint RTTI::GetVFTable()
-{
-	return m_vftable;
-}
 
 void RTTI::Print()
 {
@@ -263,25 +318,25 @@ void RTTI::PrintVerboseToLog()
 	if (!m_isValid)
 		return;
 
-	dprintf("=====================================================================================\n");
-	dprintf("RTTI Class Information:\n");
-	dprintf("this: %p\n", m_this);
-	dprintf("name: %s\n", name.c_str());
-	dprintf("\n");
-	dprintf("vftable: %p\n", m_vftable);
-	vftable.Print();
-	dprintf("\n");
-	dprintf("CompleteObjectLocator: %p\n", m_completeObjectLocator);
-	completeObjectLocator.Print();
-	dprintf("\n");
-	dprintf("TypeDescriptor: %p\n", m_typeDescriptor);
-	typeDescriptor.Print();
-	dprintf("\n");
-	dprintf("ClassHierarchyDescriptor: %p\n", m_classHierarchyDescriptor);
-	classHierarchyDescriptor.Print();	
-	dprintf("\n");
-	PrintBaseClasses();
-	dprintf("=====================================================================================\n");
+	//dprintf("=====================================================================================\n");
+	//dprintf("RTTI Class Information:\n");
+	//dprintf("this: %p\n", m_this);
+	//dprintf("name: %s\n", name.c_str());
+	//dprintf("\n");
+	////dprintf("vftable: %p\n", m_vftable);
+	//m_vftable.Print();
+	//dprintf("\n");
+	//dprintf("CompleteObjectLocator: %p\n", m_vftable.pCompleteObjectLocator);
+	//m_completeObjectLocator.Print();
+	//dprintf("\n");
+	//dprintf("TypeDescriptor: %p\n", m_typeDescriptor);
+	//m_typeDescriptor.Print();
+	//dprintf("\n");
+	//dprintf("ClassHierarchyDescriptor: %p\n", m_classHierarchyDescriptor);
+	//classHierarchyDescriptor.Print();	
+	//dprintf("\n");
+	//PrintBaseClasses();
+	//dprintf("=====================================================================================\n");
 }
 
 void RTTI::PrintBaseClasses()

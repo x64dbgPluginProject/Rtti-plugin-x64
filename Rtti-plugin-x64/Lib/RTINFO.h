@@ -10,14 +10,13 @@ struct RTTICompleteObjectLocator;
 struct vftable_t 
 {
 	RTTICompleteObjectLocator* pCompleteObjectLocator;		// offset -4
-	//void* vmethod1;										// offset +0
 
 	void Print();
 };
 
 inline void vftable_t::Print()
 {
-	dprintf("    pCompleteObjectLocator: %p\n", pCompleteObjectLocator);
+	dprintf("  pCompleteObjectLocator: %p\n", pCompleteObjectLocator);
 }
 
 struct PMD
@@ -39,7 +38,7 @@ inline void PMD::Print()
 }
 
 struct TypeDescriptor {
-	duint pVFTable;					// Always points to the type_info descriptor
+	duint pTypeInfo;					// Always points to the type_info descriptor
 	duint spare;
 	char skip;						// Skip the period before the mangled name
 	char sz_decorated_name[256];
@@ -49,17 +48,18 @@ struct TypeDescriptor {
 
 inline void TypeDescriptor::Print()
 {
-	dprintf("    pVFTable: %p\n", pVFTable);
-	//dprintf("    spare: %p\n", spare);
-	dprintf("    sz_decorated_name: %s\n", sz_decorated_name);
+	dprintf("TypeDescriptor\n");
+	dprintf("  pTypeInfo: %p\n", pTypeInfo);
+	dprintf("  sz_decorated_name: %s\n", sz_decorated_name);
 }
 
 struct RTTIBaseClassDescriptor
 {
-	TypeDescriptor* pTypeDescriptor;	// type descriptor of the class
-	duint numContainedBases;			// number of nested classes following in the Base Class Array
+	DWORD pTypeDescriptor;	// type descriptor of the class
+
+	DWORD numContainedBases;			// number of nested classes following in the Base Class Array
 	struct PMD where;					// pointer-to-member displacement info
-	duint attributes;					// flags, usually 0
+	DWORD attributes;					// flags, usually 0
 
 	void Print();
 };
@@ -80,13 +80,13 @@ struct RTTIClassHierarchyDescriptor
 	DWORD attributes;								//bit 0 set = multiple inheritance, bit 1 set = virtual inheritance
 	DWORD numBaseClasses;							//number of classes in pBaseClassArray
 
-union {
-	//struct RTTIBaseClassArray* pBaseClassArray;		// Index 0 of this array is always 'this' class first
-	DWORD pBaseClassArray;		// Index 0 of this array is always 'this' class first
-	struct {
-		DWORD offset_baseClassArray;				// Offset from the module base
-	} x64;
-};
+	union {
+		//struct RTTIBaseClassArray* pBaseClassArray;		// Index 0 of this array is always 'this' class first
+		DWORD pBaseClassArray;		// Index 0 of this array is always 'this' class first
+		struct {
+			DWORD offset;				// Offset from the module base
+		} x64_pBaseClassArray;
+	};
 
 	void Print();
 };
@@ -118,14 +118,14 @@ union {
 	DWORD pTypeDescriptor;							//TypeDescriptor of the complete class
 	struct {
 		DWORD offset;				// Offset from the module base
-	} x64_typeDescriptor;
+	} x64_pTypeDescriptor;
 };
 
 union {
 	DWORD pClassHierarchyDescriptor;				//describes inheritance hierarchy
 	struct {
 		DWORD offset;				// Offset from the module base
-	} x64_classHierarchyDescriptor;
+	} x64_pClassHierarchyDescriptor;
 };
 
 	void Print();
@@ -133,9 +133,8 @@ union {
 
 inline void RTTICompleteObjectLocator::Print()
 {
-	dprintf("    signature: %X\n", signature);
-	dprintf("    offset: %X\n", offset);
-	dprintf("    cdOffset: %X\n", cdOffset);
-	dprintf("    pTypeDescriptor: %p\n", pTypeDescriptor);
-	dprintf("    pClassDescriptor: %p\n", pClassHierarchyDescriptor);
+	dprintf("CompleteObjectLocator\n");
+	dprintf("  signature: %08X offset: %08X cdOffset: %08X\n", signature, offset, cdOffset);
+	dprintf("  pTypeDescriptor: %08X\n", pTypeDescriptor);
+	dprintf("  pClassDescriptor: %08X\n", pClassHierarchyDescriptor);
 }

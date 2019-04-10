@@ -21,17 +21,21 @@ public:
 	// This class' name
 	string name;
 
-	vftable_t vftable;
-	RTTICompleteObjectLocator completeObjectLocator;
-	TypeDescriptor typeDescriptor;
+	// vftable
+	bool GetVftable();
+	duint GetAddressVftable();
+
+	// CompleteObjectLocator
+	bool GetCompleteObjectLocator();
+
+	bool GetTypeDescriptor();
+
 	RTTIClassHierarchyDescriptor classHierarchyDescriptor;
 
 	// These are to iterate over the classHierarchyDescriptor Base classes
 	RTTIBaseClassDescriptor GetBaseClassDescriptor(size_t n);
 	TypeDescriptor GetBaseTypeDescriptor(size_t n);
 	string GetBaseClassName(size_t n);
-	
-	duint GetVFTable();
 
 	void PrintVerboseToLog();
 	void Print();
@@ -43,9 +47,11 @@ private:
 	bool m_isValid = false;		// Is true if RTTI information is present
 	
 	duint m_this = 0;
-	duint m_vftable = 0;
-	duint m_completeObjectLocator = 0;
-	duint m_typeDescriptor = 0;
+	
+	vftable_t m_vftable;
+	RTTICompleteObjectLocator m_completeObjectLocator;
+	TypeDescriptor m_typeDescriptor;
+
 	duint m_classHierarchyDescriptor = 0;
 	duint m_pBaseClassArray = 0;
 
