@@ -25,6 +25,7 @@ RTTI::RTTI(duint addr)
 bool RTTI::GetRTTI()
 {
 	duint addr = m_this;
+	duint moduleBase;
 
 	// Read the value at this to m_vftable
 	if (!DbgMemRead(addr, &m_vftable, sizeof(duint)))
@@ -42,35 +43,38 @@ bool RTTI::GetRTTI()
 	if (!DbgMemRead(m_completeObjectLocator, &completeObjectLocator, sizeof(RTTICompleteObjectLocator)))
 		return false;
 
-	dprintf("CompleteObjectLocator information\n");
-	dprintf("m_completeObjectLocator : %p\n", m_completeObjectLocator);
-	dprintf("completeObjectLocator.signature: %d\n", completeObjectLocator.signature);
-	dprintf("completeObjectLocator.offset   : %d\n", completeObjectLocator.offset);
-	dprintf("completeObjectLocator.cdOffset : %d\n", completeObjectLocator.cdOffset);
-	dprintf("completeObjectLocator.pTypeDescriptor : %p\n", completeObjectLocator.pTypeDescriptor);
-	dprintf("completeObjectLocator.pClassDescriptor : %p\n", completeObjectLocator.pClassDescriptor);
+	moduleBase = GetBaseAddress(m_completeObjectLocator);
+	dprintf("moduleBase: %p\n\n", moduleBase);
+
+	dprintf("m_completeObjectLocator: %p\n", m_completeObjectLocator);
+	dprintf("signature: %p\n", completeObjectLocator.signature);
+	dprintf("offset: %p\n", completeObjectLocator.offset);
+	dprintf("cdOffset: %p\n", completeObjectLocator.cdOffset);
 
 #ifdef _WIN64
 
 	// In x64 the CompleteObjectLocator is different, this is encapsulated in the RTTICompleteObjectLocator .x64 field
 	// The TypeDescriptor and ClassDescriptors are offsets from the base of the module, so to get their final address 
-	// We add module base + (short)offset_typeDescriptor to it.
-	duint moduleBase = GetBaseAddress(m_completeObjectLocator);
-	dprintf("baseAddress @: %p\n", moduleBase);
+	// We add module base + (DWORD)offset_typeDescriptor to it.
 
-	// Set the last four digits to zeros   returns the .rdata section, we need the full image base + offset to get the class name
-	//baseAddress = ((baseAddress) >> 16) << 16;
+	// Offset from the base of the module to the typeDescriptor
+	duint offset_typeDescriptor = completeObjectLocator.x64_typeDescriptor.offset;
+	duint offset_classDescriptor = completeObjectLocator.x64_classHierarchyDescriptor.offset;
 
-	m_typeDescriptor = (duint)ADDPTR(moduleBase, completeObjectLocator.x64.offset_typeDescriptor);
-	dprintf("completeObjectLocator.x64.offset_typeDescriptor: %X\n", completeObjectLocator.x64.offset_typeDescriptor);
-	dprintf("m_typeDescriptor: %p\n", m_typeDescriptor);
-	m_classHierarchyDescriptor = (duint)ADDPTR(moduleBase, completeObjectLocator.x64.offset_classHierarchyDescriptor);
-	dprintf("completeObjectLocator.x64.offset_classHierarchyDescriptor: %X\n", completeObjectLocator.x64.offset_classHierarchyDescriptor);
-	dprintf("m_classHierarchyDescriptor: %p\n", m_classHierarchyDescriptor);
+	m_typeDescriptor = (duint)ADDPTR(moduleBase, offset_typeDescriptor);
+	m_classHierarchyDescriptor = (duint)ADDPTR(moduleBase, offset_classDescriptor);
+
+#else
+
+	m_typeDescriptor = (duint)completeObjectLocator.pTypeDescriptor;
+	m_classHierarchyDescriptor = (duint)completeObjectLocator.pClassHierarchyDescriptor;
+
 #endif
 
+	dprintf("m_typeDescriptor: %p\n", m_typeDescriptor);
+	dprintf("m_classHierarchyDescriptor: %p\n", m_classHierarchyDescriptor);
+
 	// Read the TypeDescriptor
-	m_typeDescriptor = (duint)completeObjectLocator.pTypeDescriptor;
 	if (!DbgMemRead(m_typeDescriptor, &typeDescriptor, sizeof(TypeDescriptor)))
 		return false;
 
@@ -78,24 +82,42 @@ bool RTTI::GetRTTI()
 	name = Demangle(typeDescriptor.sz_decorated_name);
 
 	// Read the RTTIClassHierarchyDescriptor
-	m_classHierarchyDescriptor = (duint)completeObjectLocator.pClassDescriptor;
 	if (!DbgMemRead(m_classHierarchyDescriptor, &classHierarchyDescriptor, sizeof(RTTIClassHierarchyDescriptor)))
 		return false;
 
-	// Populate the BaseClassArray
+	dprintf("numBaseClasses: %p\n", classHierarchyDescriptor.numBaseClasses);
+
+#ifdef _WIN64
+	duint offset_pBaseClassArray = classHierarchyDescriptor.x64.offset_baseClassArray;
+	m_pBaseClassArray = (duint)ADDPTR(moduleBase, offset_pBaseClassArray);
+#else
 	m_pBaseClassArray = (duint)classHierarchyDescriptor.pBaseClassArray;
+#endif
 	
+	dprintf("m_pBaseClassArray: %p\n", m_pBaseClassArray);
+
+	// Populate the BaseClassArray
 	// For each of the numBaseClasses populate the BaseClassDescriptors
 	for (size_t i = 0; i < classHierarchyDescriptor.numBaseClasses; i++)
 	{
-		addr = m_pBaseClassArray + (i * sizeof(duint));
+		addr = m_pBaseClassArray + (i * sizeof(DWORD));
+
+		dprintf("addr: %p\n", addr);
 
 		duint pBaseClassDescriptor;
 		if (!DbgMemRead(addr, &pBaseClassDescriptor, sizeof(void*)))
 			return false;
 
+#ifdef _WIN64
+		pBaseClassDescriptor = (duint)ADDPTR(moduleBase, pBaseClassDescriptor);
+#endif
+
+		dprintf("pBaseClassDescriptor: %p\n", pBaseClassDescriptor);
+
 		// Save the pointer to each of the base class descriptors
 		m_BaseClassArray[i] = pBaseClassDescriptor;
+
+		dprintf("m_BaseClassArray[%d]: %p\n", i, m_BaseClassArray[i]);
 
 		// Read it into the struct
 		if (!DbgMemRead(pBaseClassDescriptor, &m_baseClassDescriptors[i], sizeof(RTTIBaseClassDescriptor)))
