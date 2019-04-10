@@ -106,7 +106,15 @@ struct RTTICompleteObjectLocator
 	DWORD signature;								//always zero ?  (x64 always 1?)
 	DWORD offset;									//offset of this vtable in the complete class
 	DWORD cdOffset;									//constructor displacement offset
+
+union {
 	TypeDescriptor* pTypeDescriptor;				//TypeDescriptor of the complete class
+	struct {
+		DWORD offset_typeDescriptor;				// Offset from the module base
+		DWORD offset_classHierarchyDescriptor;		// Offset from the module base
+	} x64;
+};
+
 	RTTIClassHierarchyDescriptor* pClassDescriptor; //describes inheritance hierarchy
 
 	void Print();

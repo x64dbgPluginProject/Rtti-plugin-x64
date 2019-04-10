@@ -10,6 +10,11 @@
 
 using namespace std;
 
+duint GetBaseAddress(duint addr)
+{
+	return DbgFunctions()->ModBaseFromAddr(addr);
+}
+
 RTTI::RTTI(duint addr)
 {
 	m_this = addr;
@@ -38,22 +43,30 @@ bool RTTI::GetRTTI()
 		return false;
 
 	dprintf("CompleteObjectLocator information\n");
+	dprintf("m_completeObjectLocator : %p\n", m_completeObjectLocator);
 	dprintf("completeObjectLocator.signature: %d\n", completeObjectLocator.signature);
 	dprintf("completeObjectLocator.offset   : %d\n", completeObjectLocator.offset);
 	dprintf("completeObjectLocator.cdOffset : %d\n", completeObjectLocator.cdOffset);
 	dprintf("completeObjectLocator.pTypeDescriptor : %p\n", completeObjectLocator.pTypeDescriptor);
 	dprintf("completeObjectLocator.pClassDescriptor : %p\n", completeObjectLocator.pClassDescriptor);
 
-
 #ifdef _WIN64
-	// In x64 the CompleteObjectLocator information is 
-	duint size = 0;
-	duint rdataSection = DbgMemFindBaseAddr(m_completeObjectLocator, &size);
+
+	// In x64 the CompleteObjectLocator is different, this is encapsulated in the RTTICompleteObjectLocator .x64 field
+	// The TypeDescriptor and ClassDescriptors are offsets from the base of the module, so to get their final address 
+	// We add module base + (short)offset_typeDescriptor to it.
+	duint moduleBase = GetBaseAddress(m_completeObjectLocator);
+	dprintf("baseAddress @: %p\n", moduleBase);
 
 	// Set the last four digits to zeros   returns the .rdata section, we need the full image base + offset to get the class name
 	//baseAddress = ((baseAddress) >> 16) << 16;
 
-	dprintf("baseAddress @: %p\n", rdataSection);
+	m_typeDescriptor = (duint)ADDPTR(moduleBase, completeObjectLocator.x64.offset_typeDescriptor);
+	dprintf("completeObjectLocator.x64.offset_typeDescriptor: %X\n", completeObjectLocator.x64.offset_typeDescriptor);
+	dprintf("m_typeDescriptor: %p\n", m_typeDescriptor);
+	m_classHierarchyDescriptor = (duint)ADDPTR(moduleBase, completeObjectLocator.x64.offset_classHierarchyDescriptor);
+	dprintf("completeObjectLocator.x64.offset_classHierarchyDescriptor: %X\n", completeObjectLocator.x64.offset_classHierarchyDescriptor);
+	dprintf("m_classHierarchyDescriptor: %p\n", m_classHierarchyDescriptor);
 #endif
 
 	// Read the TypeDescriptor
@@ -95,8 +108,8 @@ bool RTTI::GetRTTI()
 		m_baseClassTypeNames[i] = Demangle(m_baseClassTypeDescriptors[i].sz_decorated_name);
 
 		// Assign the vbtable entry
-		m_vbtable[i] = (duint)ADDPTR(m_this, m_baseClassDescriptors[i].where.mdisp);
-		m_baseClassOffsets[i] =  0;
+		m_vbtable[i] = 0;
+		m_baseClassOffsets[i] = (duint)ADDPTR(m_this, m_baseClassDescriptors[i].where.mdisp);
 
 		if (m_baseClassDescriptors[i].where.pdisp != -1)
 		{
