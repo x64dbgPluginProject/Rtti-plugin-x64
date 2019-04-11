@@ -21,16 +21,12 @@ public:
 	// This class' name
 	string name;
 
-	// vftable
+	// Populates the private fields m_...
 	bool GetVftable();
 	duint GetAddressVftable();
-
-	// CompleteObjectLocator
 	bool GetCompleteObjectLocator();
-
 	bool GetTypeDescriptor();
-
-	RTTIClassHierarchyDescriptor classHierarchyDescriptor;
+	bool GetClassHierarchyDescriptor();	
 
 	// These are to iterate over the classHierarchyDescriptor Base classes
 	RTTIBaseClassDescriptor GetBaseClassDescriptor(size_t n);
@@ -51,8 +47,8 @@ private:
 	vftable_t m_vftable;
 	RTTICompleteObjectLocator m_completeObjectLocator;
 	TypeDescriptor m_typeDescriptor;
+	RTTIClassHierarchyDescriptor m_classHierarchyDescriptor;
 
-	duint m_classHierarchyDescriptor = 0;
 	duint m_pBaseClassArray = 0;
 
 	bool GetRTTI();
@@ -79,7 +75,7 @@ private:
 	
 	// This is for printing so you can easily see where the base class is from _this_
 	// Because these are calculated from the base of the vbtable, it's hard to know automatically where that is
-	duint GetBaseClassAddressFromThis(size_t idx);
+	duint GetBaseClassOffsetFromThis(size_t idx);
 };
 
 void DumpRttiWindow(int hWindow);

@@ -93,19 +93,19 @@ struct RTTIClassHierarchyDescriptor
 
 inline void RTTIClassHierarchyDescriptor::Print()
 {
-	dprintf("    signature: %X\n", signature);
-	dprintf("    attributes: %X\n", attributes);
+	dprintf("ClassHierarchyDescriptor\n");
+	dprintf("  signature: %X attributes: %X\n", signature, attributes);
 
-	string inheritanceMessage;
+	string inheritanceMessage = "";
 	if (CHECK_BIT(attributes, 0))
 		inheritanceMessage += "Multiple Inheritance";
 	if (CHECK_BIT(attributes, 1))
 		inheritanceMessage += " | Virtual Inheritance";
 	if (!inheritanceMessage.empty())
-		dprintf("        %s\n", inheritanceMessage.c_str());
+		dprintf("  Inheritance: %s\n", inheritanceMessage.c_str());
 
-	dprintf("    numBaseClasses: %d\n", numBaseClasses);
-	dprintf("    pBaseClassArray: %p\n", pBaseClassArray);
+	dprintf("  numBaseClasses: %d\n", numBaseClasses);
+	dprintf("  pBaseClassArray: %p\n", pBaseClassArray);
 }
 
 struct RTTICompleteObjectLocator
