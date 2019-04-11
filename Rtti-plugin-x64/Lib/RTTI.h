@@ -49,8 +49,6 @@ private:
 	TypeDescriptor m_typeDescriptor;
 	RTTIClassHierarchyDescriptor m_classHierarchyDescriptor;
 
-	duint m_pBaseClassArray = 0;
-
 	bool GetRTTI();
 	string Demangle(char * sz_name);
 
@@ -59,9 +57,12 @@ private:
 	RTTIBaseClassDescriptor m_baseClassDescriptors[MAX_BASE_CLASSES];
 	
 	// These refer to the position of the member inside the base class, this is used
+	// I haven't seen multiple vbtables in a this, but the information in the BaseClassTypeDescriptors
+	// Contain potentially different offsets from the vbtable
 	// for multiple, virtual inheritance, this information is parsed from the vbtable if pdisp != -1
-	duint m_nBaseClassOffsets = 0;
 	duint m_vbtable[MAX_BASE_CLASSES] = { 0 };
+	
+	// The offsets that each base class is at within the this class
 	duint m_baseClassOffsets[MAX_BASE_CLASSES] = { 0 };
 
 	TypeDescriptor m_baseClassTypeDescriptors[MAX_BASE_CLASSES];

@@ -144,20 +144,26 @@ bool RTTI::GetRTTI()
 	}
 	m_classHierarchyDescriptor.Print();
 
-#ifdef _WIN64
-	duint offset_pBaseClassArray = classHierarchyDescriptor.x64_pBaseClassArray.offset;
-	m_pBaseClassArray = (duint)ADDPTR(moduleBase, offset_pBaseClassArray);
-#else
-	m_pBaseClassArray = (duint)m_classHierarchyDescriptor.pBaseClassArray;
-#endif
+//#ifdef _WIN64
+//	duint offset_pBaseClassArray = classHierarchyDescriptor.x64_pBaseClassArray.offset;
+//	m_pBaseClassArray = (duint)ADDPTR(moduleBase, offset_pBaseClassArray);
+//#else
+	duint addrBaseClassArray = (duint)m_classHierarchyDescriptor.pBaseClassArray;
+//#endif
 	
-	dprintf("m_pBaseClassArray: %p\n", m_pBaseClassArray);
+	duint numBaseClasses = m_classHierarchyDescriptor.numBaseClasses;
+
+	if (numBaseClasses > MAX_BASE_CLASSES)
+	{
+		dprintf("ClassHierarchyDescriptor found %d base classes, this is highly unlikely, maximum we can save %d.\n", m_classHierarchyDescriptor.numBaseClasses, MAX_BASE_CLASSES);
+		return false;
+	}
 
 	// Populate the BaseClassArray
 	// For each of the numBaseClasses populate the BaseClassDescriptors
-	for (size_t i = 0; i < m_classHierarchyDescriptor.numBaseClasses; i++)
+	for (size_t i = 0; i < numBaseClasses; i++)
 	{
-		addr = m_pBaseClassArray + (i * sizeof(DWORD));
+		addr = addrBaseClassArray + (i * sizeof(DWORD));	// In x64 this is an offset from the base to the BaseClassDescriptor
 
 		dprintf("addr: %p\n", addr);
 
@@ -230,7 +236,6 @@ bool RTTI::GetRTTI()
 			}
 
 			m_baseClassOffsets[i] = memberOffsets[i];
-			m_nBaseClassOffsets++;
 		}
 	}
 
