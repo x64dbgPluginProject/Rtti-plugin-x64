@@ -10,6 +10,18 @@
 
 using namespace std;
 
+string Demangle(char* sz_name)
+{
+	char tmp[MAX_CLASS_NAME] = { 0 };
+	if (UnDecorateSymbolName(sz_name, tmp, MAX_CLASS_NAME, UNDNAME_NAME_ONLY) == 0)
+		return false;
+
+	// Remove 'AV' from the name
+	char* n = tmp + 2;
+
+	return string(n);
+}
+
 duint GetBaseAddress(duint addr)
 {
 	return DbgFunctions()->ModBaseFromAddr(addr);
@@ -80,10 +92,6 @@ bool RTTI::GetClassHierarchyDescriptor()
 
 bool RTTI::GetBaseClasses()
 {
-	/// Here's what we need to do
-	/// Be able to get a base class at an index  GetBaseClass(idx);
-	/// Populate their shit
-
 //#ifdef _WIN64
 //	duint offset_pBaseClassArray = classHierarchyDescriptor.x64_pBaseClassArray.offset;
 //	m_pBaseClassArray = (duint)ADDPTR(moduleBase, offset_pBaseClassArray);
@@ -131,7 +139,7 @@ bool RTTI::GetBaseClasses()
 		duint vdisp = baseClass.where.vdisp;
 
 		//
-		// Save each offset
+		// Save each offset so we can display to the user where it is inside the class
 		//
 
 		m_baseClassOffsets[i] = (duint)ADDPTR(m_this, mdisp);
@@ -245,18 +253,6 @@ bool RTTI::GetRTTI()
 	return true;
 }
 
-string RTTI::Demangle(char* sz_name)
-{
-	char tmp[MAX_CLASS_NAME] = { 0 };
-	if (UnDecorateSymbolName(sz_name, tmp, MAX_CLASS_NAME, UNDNAME_NAME_ONLY) == 0)
-		return false;
-
-	// Remove 'AV' from the name
-	char* n = tmp + 2;
-
-	return string(n);
-}
-
 RTTIBaseClassDescriptor RTTI::GetBaseClassDescriptor(size_t idx)
 {
 	if (!m_isValid)
@@ -331,15 +327,6 @@ duint RTTI::GetBaseClassOffset(size_t idx)
 
 	return m_baseClassOffsets[idx];
 }
-
-//duint RTTI::GetBaseClassAddress(size_t idx)
-//{
-//	duint offset = GetBaseClassOffset(idx);
-//	duint vbtable = GetVbtable(idx);
-//	
-//	duint addr = (duint)ADDPTR(vbtable, offset);
-//	return addr;
-//}
 
 duint RTTI::GetBaseClassOffsetFromThis(size_t idx)
 {

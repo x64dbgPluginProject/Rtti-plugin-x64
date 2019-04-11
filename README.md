@@ -23,12 +23,13 @@ The tests have breakpoints after the creation of the class, so open the tests in
 If you find a crash please submit an issue on gitlab.
 
 ## References
-There are references for finding Rtti information included in the /docs directory.  Thanks to the authors of those papers:
+There are references for finding Rtti information included in the /docs directory.  Thanks to the authors of the following papers:
 
-[igorsk](http://www.openrce.org/profile/view/igorsk)
-
-Paul Vincent Sabanal (Researcher, IBM Internet Security Systems X-Force R&D)
-
-Mark Vincent Yason (Researcher, IBM Internet Security Systems X-Force R&D)
+[Reversing C++ by Paul Vincent Sabanal and Mark Vincent Yason](https://www.blackhat.com/presentations/bh-dc-07/Sabanal_Yason/Paper/bh-dc-07-Sabanal_Yason-WP.pdf)
 
 [Visual C++ RTTI Inspection](https://blog.quarkslab.com/visual-c-rtti-inspection.html)
+
+[Reversing Microsoft Visual C++ Part II: Classes, Methods and RTTI - by Igorsk](http://www.openrce.org/articles/full_view/23)
+
+
+[Recovery of Object Oriented Features from C++ Binaries](https://www.ece.umd.edu/~barua/yoo-APSEC-2014.pdf)
