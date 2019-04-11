@@ -73,7 +73,13 @@ bool RTTI::GetCompleteObjectLocator()
 
 bool RTTI::GetTypeDescriptor()
 {
+
+#ifdef _WIN64
+	duint moduleBase = GetBaseAddress((duint)m_vftable.pCompleteObjectLocator);
+	duint pTypeDescriptor = (duint)ADDPTR(moduleBase, m_completeObjectLocator.pTypeDescriptor);
+#else
 	duint pTypeDescriptor = m_completeObjectLocator.pTypeDescriptor;
+#endif
 
 	// Read the TypeDescriptor
 	if (!DbgMemRead(pTypeDescriptor, &m_typeDescriptor, sizeof(TypeDescriptor)))
@@ -84,7 +90,14 @@ bool RTTI::GetTypeDescriptor()
 
 bool RTTI::GetClassHierarchyDescriptor()
 {
-	if (!DbgMemRead(m_completeObjectLocator.pClassHierarchyDescriptor, &m_classHierarchyDescriptor, sizeof(RTTIClassHierarchyDescriptor)))
+#ifdef _WIN64
+	duint moduleBase = GetBaseAddress((duint)m_vftable.pCompleteObjectLocator);
+	duint pClassHierarchyDescriptor = (duint)ADDPTR(moduleBase, m_completeObjectLocator.pClassHierarchyDescriptor);
+#else
+	duint pClassHierarchyDescriptor = m_completeObjectLocator.pClassHierarchyDescriptor;
+#endif
+
+	if (!DbgMemRead(pClassHierarchyDescriptor, &m_classHierarchyDescriptor, sizeof(RTTIClassHierarchyDescriptor)))
 		return false;
 
 	return true;
@@ -92,19 +105,18 @@ bool RTTI::GetClassHierarchyDescriptor()
 
 bool RTTI::GetBaseClasses()
 {
-//#ifdef _WIN64
-//	duint offset_pBaseClassArray = classHierarchyDescriptor.x64_pBaseClassArray.offset;
-//	m_pBaseClassArray = (duint)ADDPTR(moduleBase, offset_pBaseClassArray);
-//#else
+#ifdef _WIN64
+	duint addrBaseClassArray = (duint)ADDPTR(m_moduleBase, m_classHierarchyDescriptor.pBaseClassArray);
+#else
 	duint addrBaseClassArray = (duint)m_classHierarchyDescriptor.pBaseClassArray;
-//#endif
+#endif
 
 	duint addr = 0;
 	duint numBaseClasses = m_classHierarchyDescriptor.numBaseClasses;
 
 	if (numBaseClasses > MAX_BASE_CLASSES)
 	{
-		dprintf("Found %d base classes in the ClassHierarchyDescriptor, this is highly unlikely, maximum we can save is %d.  Aborting.\n", m_classHierarchyDescriptor.numBaseClasses, MAX_BASE_CLASSES);
+		dprintf("Found %d base classes in the ClassHierarchyDescriptor, this seems unlikely, maximum we can save is %d.  Aborting.\n", m_classHierarchyDescriptor.numBaseClasses, MAX_BASE_CLASSES);
 		return false;
 	}
 
@@ -114,19 +126,33 @@ bool RTTI::GetBaseClasses()
 	for (size_t i = 1; i < numBaseClasses; i++)
 	{
 		addr = addrBaseClassArray + (i * sizeof(DWORD));
-		
-		if (!DbgMemRead(addr, &addr, sizeof(addr)))
+		DWORD val = 0;
+
+		if (!DbgMemRead(addr, &val, sizeof(DWORD)))
 			return false;
 
+#ifdef _WIN64
+		addr = (duint)ADDPTR(m_moduleBase, val);
+#else
+		addr = val;
+#endif
+		
 		// Copy in the BaseClassDescriptor
 		if (!DbgMemRead(addr, &m_baseClassDescriptors[i], sizeof(RTTIBaseClassDescriptor)))
 			return false;
 
+		auto baseClass = m_baseClassDescriptors[i];
+
+#ifdef _WIN64
+		addr = (duint)ADDPTR(m_moduleBase, m_baseClassDescriptors[i].pTypeDescriptor);
+#else
+		addr = m_baseClassDescriptors[i].pTypeDescriptor;
+#endif
+
 		// Copy in the BaseClassTypeDescriptor
-		if (!DbgMemRead(m_baseClassDescriptors[i].pTypeDescriptor, &m_baseClassTypeDescriptors[i], sizeof(TypeDescriptor)))
+		if (!DbgMemRead(addr, &m_baseClassTypeDescriptors[i], sizeof(TypeDescriptor)))
 			return false;
 
-		auto baseClass = m_baseClassDescriptors[i];
 		auto baseClassType = m_baseClassTypeDescriptors[i];
 
 		string className = Demangle(baseClassType.sz_decorated_name);
@@ -152,7 +178,7 @@ bool RTTI::GetBaseClasses()
 			m_vbtable[i] = (duint)ADDPTR(m_this, baseClass.where.pdisp);
 
 			duint pMemberOffsets = 0;
-			duint memberOffsets[MAX_BASE_CLASSES] = { 0 };
+			DWORD memberOffsets[MAX_BASE_CLASSES] = { 0 };
 
 			// Read the value at the vdisp to find where the class is off the vbtable of this class
 			//duint vbtable = 0;
@@ -180,9 +206,6 @@ bool RTTI::GetBaseClasses()
 
 bool RTTI::GetRTTI()
 {
-	duint addr = m_this;
-	duint moduleBase;
-
 	dprintf("=====================================================================================\n");
 
 	// Parse vftable
@@ -203,7 +226,7 @@ bool RTTI::GetRTTI()
 	}
 	m_completeObjectLocator.Print();
 
-	moduleBase = GetBaseAddress((duint)m_vftable.pCompleteObjectLocator);
+	m_moduleBase = GetBaseAddress((duint)m_vftable.pCompleteObjectLocator);
 
 	// Parse TypeDescriptor
 	if (GetTypeDescriptor() == false)
@@ -212,26 +235,6 @@ bool RTTI::GetRTTI()
 		return false;
 	}
 	m_typeDescriptor.Print();
-
-//#ifdef _WIN64
-//
-//	// In x64 the CompleteObjectLocator is different, this is encapsulated in the RTTICompleteObjectLocator .x64 field
-//	// The TypeDescriptor and ClassDescriptors are offsets from the base of the module, so to get their final address 
-//	// We add module base + (DWORD)offset_typeDescriptor to it.
-//
-//	// Offset from the base of the module to the typeDescriptor
-//	duint offset_typeDescriptor = completeObjectLocator.x64_pTypeDescriptor.offset;
-//	duint offset_classDescriptor = completeObjectLocator.x64_pClassHierarchyDescriptor.offset;
-//
-//	m_typeDescriptor = (duint)ADDPTR(moduleBase, offset_typeDescriptor);
-//	m_classHierarchyDescriptor = (duint)ADDPTR(moduleBase, offset_classDescriptor);
-//
-//#else
-//
-//	m_typeDescriptor = (duint)m_completeObjectLocator.pTypeDescriptor;
-//	m_classHierarchyDescriptor = (duint)m_completeObjectLocator.pClassHierarchyDescriptor;
-//
-//#endif
 
 	// Demangle the name and copy it 
 	name = Demangle(m_typeDescriptor.sz_decorated_name);
@@ -259,10 +262,7 @@ RTTIBaseClassDescriptor RTTI::GetBaseClassDescriptor(size_t idx)
 		return RTTIBaseClassDescriptor();
 
 	if (idx > m_classHierarchyDescriptor.numBaseClasses)
-	{
-		dprintf("can't get index %d because there are only %d base classes!\n", idx, m_classHierarchyDescriptor.numBaseClasses);
 		return RTTIBaseClassDescriptor();
-	}
 
 	return m_baseClassDescriptors[idx];
 }

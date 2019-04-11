@@ -4,6 +4,7 @@
 #include "Lib\Rtti.h"
 
 #define RTTI_COMMAND "rtti"
+#define RTTI_PLUGIN_VERSION "1.0"
 
 // Checks the settings and auto-labels the enabled ones
 bool AutoLabel(RTTI rtti)
@@ -101,7 +102,9 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
     case MENU_DUMP_RTTI:
 		DumpRttiWindow(GUI_DUMP);
         break;
-
+	case MENU_ABOUT:
+		MessageBoxA(GuiGetWindowHandle(), "RTTI plugin version v" RTTI_PLUGIN_VERSION "\n\nhttps://gitlab.com/colinsenner/Rtti-plugin-x64", "About", 0);
+		break;
     default:
         break;
     }
@@ -129,6 +132,9 @@ void pluginSetup()
     int labelMenu = _plugin_menuadd(hMenu, "Auto-Label");
 	_plugin_menuaddentry(labelMenu, MENU_AUTO_LABEL_VFTABLE, "vftable");
     _plugin_menuaddentry(hMenuDump, MENU_DUMP_RTTI, "&Dump Rtti");
+
+	// About menu
+	_plugin_menuaddentry(hMenu, MENU_ABOUT, "&About");
 
 	// Update the checked status
 	_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_LABEL_VFTABLE, settings.auto_label_vftable);

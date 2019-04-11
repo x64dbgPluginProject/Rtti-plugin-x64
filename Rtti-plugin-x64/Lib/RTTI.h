@@ -31,7 +31,8 @@ private:
 	
 	duint m_this = 0;
 	bool m_isValid = false;
-		
+	duint m_moduleBase = 0;
+
 	vftable_t m_vftable;
 	RTTICompleteObjectLocator m_completeObjectLocator;
 	TypeDescriptor m_typeDescriptor;
@@ -52,6 +53,8 @@ private:
 	// I haven't seen multiple vbtables in a this, but the information in the BaseClassTypeDescriptors
 	// Contain potentially different offsets from the vbtable?
 	// for multiple, virtual inheritance, this information is parsed from the vbtable if pdisp != -1
+	
+	// This is the absolute addresses of the vbtables within the class
 	duint m_vbtable[MAX_BASE_CLASSES] = { 0 };
 	
 	// The offsets that each base class is at within the this class

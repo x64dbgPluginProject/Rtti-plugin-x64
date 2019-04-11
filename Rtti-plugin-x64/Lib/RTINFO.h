@@ -70,7 +70,12 @@ inline void RTTIBaseClassDescriptor::Print(string name)
 	else
 		dprintf("  %s\n", name.c_str());
 
+#ifdef _WIN64
+	dprintf("    pTypeDescriptor: %p (Offset from module base)\n", pTypeDescriptor);
+#else
 	dprintf("    pTypeDescriptor: %p\n", pTypeDescriptor);
+#endif
+
 	dprintf("    numContainedBases: %d\n", numContainedBases);
 	where.Print();
 	dprintf("    attributes: %X\n", attributes);
@@ -82,14 +87,7 @@ struct RTTIClassHierarchyDescriptor
 	DWORD signature;								//always zero?
 	DWORD attributes;								//bit 0 set = multiple inheritance, bit 1 set = virtual inheritance
 	DWORD numBaseClasses;							//number of classes in pBaseClassArray
-
-	union {
-		//struct RTTIBaseClassArray* pBaseClassArray;		// Index 0 of this array is always 'this' class first
-		DWORD pBaseClassArray;		// Index 0 of this array is always 'this' class first
-		struct {
-			DWORD offset;				// Offset from the module base
-		} x64_pBaseClassArray;
-	};
+	DWORD pBaseClassArray;							// Index 0 of this array is always 'this' class first   in x64 this is an offset from the module base to the array
 
 	void Print();
 };
@@ -108,7 +106,13 @@ inline void RTTIClassHierarchyDescriptor::Print()
 		dprintf("  Inheritance: %s\n", inheritanceMessage.c_str());
 
 	dprintf("  numBaseClasses: %d\n", numBaseClasses);
+
+#ifdef _WIN64
+	dprintf("  pBaseClassArray: %p (Offset from module base)\n", pBaseClassArray);
+#else
 	dprintf("  pBaseClassArray: %p\n", pBaseClassArray);
+#endif
+
 }
 
 struct RTTICompleteObjectLocator
@@ -116,20 +120,8 @@ struct RTTICompleteObjectLocator
 	DWORD signature;								//always zero ?  (x64 always 1?)
 	DWORD offset;									//offset of this vtable in the complete class
 	DWORD cdOffset;									//constructor displacement offset
-
-union {
-	DWORD pTypeDescriptor;							//TypeDescriptor of the complete class
-	struct {
-		DWORD offset;				// Offset from the module base
-	} x64_pTypeDescriptor;
-};
-
-union {
-	DWORD pClassHierarchyDescriptor;				//describes inheritance hierarchy
-	struct {
-		DWORD offset;				// Offset from the module base
-	} x64_pClassHierarchyDescriptor;
-};
+	DWORD pTypeDescriptor;							//TypeDescriptor of the complete class;   in x64 this field is an offset from the module base address
+	DWORD pClassHierarchyDescriptor;				//describes inheritance hierarchy;		  in x64 this field is an offset from the module base address
 
 	void Print();
 };
