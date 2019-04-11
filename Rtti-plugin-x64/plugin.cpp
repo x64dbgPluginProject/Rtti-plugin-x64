@@ -102,6 +102,7 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
     case MENU_DUMP_RTTI:
 		DumpRttiWindow(GUI_DUMP);
         break;
+
 	case MENU_ABOUT:
 		MessageBoxA(GuiGetWindowHandle(), "RTTI plugin version v" RTTI_PLUGIN_VERSION "\n\nhttps://gitlab.com/colinsenner/Rtti-plugin-x64", "About", 0);
 		break;
