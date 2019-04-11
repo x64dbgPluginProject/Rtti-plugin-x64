@@ -34,7 +34,7 @@ struct PMD
 
 inline void PMD::Print() 
 {
-	dprintf("  mdisp: %d  pdisp: %d  vdisp: %d\n", mdisp, pdisp, vdisp);
+	dprintf("    mdisp: %d  pdisp: %d  vdisp: %d\n", mdisp, pdisp, vdisp);
 }
 
 struct TypeDescriptor {
@@ -60,17 +60,20 @@ struct RTTIBaseClassDescriptor
 	struct PMD where;					// pointer-to-member displacement info
 	DWORD attributes;					// flags, usually 0
 
-	void Print();
+	void Print(string name);
 };
 
-inline void RTTIBaseClassDescriptor::Print()
+inline void RTTIBaseClassDescriptor::Print(string name)
 {
-	dprintf("BaseClassDescriptor\n");
-	dprintf("  pTypeDescriptor: %p\n", pTypeDescriptor);
-	dprintf("  numContainedBases: %d\n", numContainedBases);
-	dprintf("  where:\n");
+	if (name == "")
+		dprintf("  BaseClassDescriptor\n");
+	else
+		dprintf("  %s\n", name.c_str());
+
+	dprintf("    pTypeDescriptor: %p\n", pTypeDescriptor);
+	dprintf("    numContainedBases: %d\n", numContainedBases);
 	where.Print();
-	dprintf("  attributes: %X\n", attributes);
+	dprintf("    attributes: %X\n", attributes);
 }
 
 // DWORD always

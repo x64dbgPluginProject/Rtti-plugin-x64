@@ -78,8 +78,9 @@ static bool cbRttiCommand(int argc, char* argv[])
 		if (rtti.IsValid())
 		{
 			AutoLabel(rtti);
-			rtti.PrintVerboseToLog();
-			rtti.Print();
+			string rttiInfo = rtti.ToString();
+
+			dprintf(rttiInfo.c_str());
 		}
 		else
 			dprintf("No RTTI information found for address %p\n", addr);

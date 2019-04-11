@@ -31,11 +31,10 @@ public:
 
 	// These are to iterate over the classHierarchyDescriptor Base classes
 	RTTIBaseClassDescriptor GetBaseClassDescriptor(size_t n);
-	TypeDescriptor GetBaseTypeDescriptor(size_t n);
-	string GetBaseClassName(size_t n);
+	//TypeDescriptor GetBaseTypeDescriptor(size_t n);
+	//string GetBaseClassName(size_t n);
 
-	void PrintVerboseToLog();
-	void Print();
+	string ToString();
 	bool IsValid();
 
 private:
@@ -47,30 +46,29 @@ private:
 	RTTICompleteObjectLocator m_completeObjectLocator;
 	TypeDescriptor m_typeDescriptor;
 	RTTIClassHierarchyDescriptor m_classHierarchyDescriptor;
-	   
+	  
+	/// Base Class Descriptors for inheritance
+
 	// The classHierarhcyDescriptor contains information for all the base classes of 'this'.  
-	// We need to copy the information from the debugger to these
 	RTTIBaseClassDescriptor m_baseClassDescriptors[MAX_BASE_CLASSES];
-	
-	// These refer to the position of the member inside the base class, this is used
+	TypeDescriptor m_baseClassTypeDescriptors[MAX_BASE_CLASSES];
+
+	// These refer to the position of the member inside the base class.
 	// I haven't seen multiple vbtables in a this, but the information in the BaseClassTypeDescriptors
-	// Contain potentially different offsets from the vbtable
+	// Contain potentially different offsets from the vbtable?
 	// for multiple, virtual inheritance, this information is parsed from the vbtable if pdisp != -1
 	duint m_vbtable[MAX_BASE_CLASSES] = { 0 };
 	
 	// The offsets that each base class is at within the this class
 	duint m_baseClassOffsets[MAX_BASE_CLASSES] = { 0 };
 
-	TypeDescriptor m_baseClassTypeDescriptors[MAX_BASE_CLASSES];
-	string m_baseClassTypeNames[MAX_BASE_CLASSES];
-	duint m_baseClassArray[MAX_BASE_CLASSES] = { 0 };
-
 	// Methods
 
 	// These take the index of the class in the m_baseClassArray
 	duint GetVbtable(size_t idx);
 	duint GetBaseClassOffset(size_t idx);
-	duint GetBaseClassAddress(size_t idx);
+	
+	//duint GetBaseClassAddress(size_t idx);
 
 	// Automatically called at construction
 	bool GetRTTI();
