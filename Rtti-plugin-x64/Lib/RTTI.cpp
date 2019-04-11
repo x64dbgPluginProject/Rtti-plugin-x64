@@ -78,6 +78,104 @@ bool RTTI::GetClassHierarchyDescriptor()
 	return true;
 }
 
+bool RTTI::GetBaseClasses()
+{
+	/// Here's what we need to do
+	/// Be able to get a base class at an index  GetBaseClass(idx);
+	/// Populate their shit
+
+//#ifdef _WIN64
+//	duint offset_pBaseClassArray = classHierarchyDescriptor.x64_pBaseClassArray.offset;
+//	m_pBaseClassArray = (duint)ADDPTR(moduleBase, offset_pBaseClassArray);
+//#else
+	duint addrBaseClassArray = (duint)m_classHierarchyDescriptor.pBaseClassArray;
+//#endif
+
+	duint addr = 0;
+	duint addrBaseClassDescriptor;
+	duint numBaseClasses = m_classHierarchyDescriptor.numBaseClasses;
+
+	if (numBaseClasses > MAX_BASE_CLASSES)
+	{
+		dprintf("ClassHierarchyDescriptor found %d base classes, this is highly unlikely, maximum we can save %d.\n", m_classHierarchyDescriptor.numBaseClasses, MAX_BASE_CLASSES);
+		return false;
+	}
+
+	// Populate the BaseClassArray
+	// For each of the numBaseClasses populate the BaseClassDescriptors
+	for (size_t i = 0; i < numBaseClasses; i++)
+	{
+		addr = addrBaseClassArray + (i * sizeof(DWORD));	// In x64 this is an offset from the base to the BaseClassDescriptor
+
+		if (!DbgMemRead(addr, &addrBaseClassDescriptor, sizeof(void*)))
+			return false;
+
+#ifdef _WIN64
+		pBaseClassDescriptor = (duint)ADDPTR(moduleBase, pBaseClassDescriptor);
+#endif
+
+		// Save the pointer to each of the base class descriptors
+		m_baseClassArray[i] = addrBaseClassDescriptor;
+
+		// Read it into the struct
+		if (!DbgMemRead(addrBaseClassDescriptor, &m_baseClassDescriptors[i], sizeof(RTTIBaseClassDescriptor)))
+			return false;
+
+#ifdef _WIN64
+		addr = (duint)ADDPTR(moduleBase, m_baseClassDescriptors[i].pTypeDescriptor);
+#else
+		addr = (duint)m_baseClassDescriptors[i].pTypeDescriptor;
+#endif
+
+		// Populate the TypeDescriptors for the Base Classes as well
+		if (!DbgMemRead(addr, &m_baseClassTypeDescriptors[i], sizeof(TypeDescriptor)))
+			return false;
+
+		m_baseClassTypeNames[i] = Demangle(m_baseClassTypeDescriptors[i].sz_decorated_name);
+
+		// Assign the vbtable entry
+		m_vbtable[i] = 0;
+
+		duint mdisp = m_baseClassDescriptors[i].where.mdisp;
+		duint pdisp = m_baseClassDescriptors[i].where.pdisp;
+		duint vdisp = m_baseClassDescriptors[i].where.vdisp;
+
+		m_baseClassOffsets[i] = (duint)ADDPTR(m_this, mdisp);
+
+		if (m_baseClassDescriptors[i].where.pdisp != -1)
+		{
+			// The docs aren't very clear here.
+			// The pdisp field is the offset of the vbtable from this
+			// Inside the vbtable we read at vdisp to get the final offset from the vbtable of the class
+			m_vbtable[i] = (duint)ADDPTR(m_this, m_baseClassDescriptors[i].where.pdisp);
+
+			duint pdisp = m_baseClassDescriptors[i].where.pdisp;
+			duint vdisp = m_baseClassDescriptors[i].where.vdisp;
+
+			duint pMemberOffsets = 0;
+			duint memberOffsets[MAX_BASE_CLASSES] = { 0 };
+
+			// Read the value at the vdisp to find where the class is off the vbtable of this class
+			//duint vbtable = 0;
+			if (!DbgMemRead(m_vbtable[i], &pMemberOffsets, sizeof(pMemberOffsets)))
+			{
+				dprintf("Problem reading the vbtable.\n");
+				continue;
+			}
+
+			if (!DbgMemRead(pMemberOffsets, &memberOffsets, sizeof(memberOffsets)))
+			{
+				dprintf("Problem reading the member offsets.\n");
+				continue;
+			}
+
+			m_baseClassOffsets[i] = memberOffsets[i];
+		}
+	}
+	
+	return true;
+}
+
 bool RTTI::GetRTTI()
 {
 	duint addr = m_this;
@@ -144,99 +242,10 @@ bool RTTI::GetRTTI()
 	}
 	m_classHierarchyDescriptor.Print();
 
-//#ifdef _WIN64
-//	duint offset_pBaseClassArray = classHierarchyDescriptor.x64_pBaseClassArray.offset;
-//	m_pBaseClassArray = (duint)ADDPTR(moduleBase, offset_pBaseClassArray);
-//#else
-	duint addrBaseClassArray = (duint)m_classHierarchyDescriptor.pBaseClassArray;
-//#endif
-	
-	duint numBaseClasses = m_classHierarchyDescriptor.numBaseClasses;
-
-	if (numBaseClasses > MAX_BASE_CLASSES)
+	if (GetBaseClasses() == false)
 	{
-		dprintf("ClassHierarchyDescriptor found %d base classes, this is highly unlikely, maximum we can save %d.\n", m_classHierarchyDescriptor.numBaseClasses, MAX_BASE_CLASSES);
+		dprintf("Couldn't parse base classes.\n");
 		return false;
-	}
-
-	// Populate the BaseClassArray
-	// For each of the numBaseClasses populate the BaseClassDescriptors
-	for (size_t i = 0; i < numBaseClasses; i++)
-	{
-		addr = addrBaseClassArray + (i * sizeof(DWORD));	// In x64 this is an offset from the base to the BaseClassDescriptor
-
-		dprintf("addr: %p\n", addr);
-
-		duint pBaseClassDescriptor;
-		if (!DbgMemRead(addr, &pBaseClassDescriptor, sizeof(void*)))
-			return false;
-
-#ifdef _WIN64
-		pBaseClassDescriptor = (duint)ADDPTR(moduleBase, pBaseClassDescriptor);
-#endif
-
-		dprintf("pBaseClassDescriptor: %p\n", pBaseClassDescriptor);
-
-		// Save the pointer to each of the base class descriptors
-		m_BaseClassArray[i] = pBaseClassDescriptor;
-
-		dprintf("m_BaseClassArray[%d]: %p\n", i, m_BaseClassArray[i]);
-
-		// Read it into the struct
-		if (!DbgMemRead(pBaseClassDescriptor, &m_baseClassDescriptors[i], sizeof(RTTIBaseClassDescriptor)))
-			return false;
-
-		dprintf("m_baseClassDescriptors[%d]: %X\n", m_baseClassDescriptors[i]);
-
-#ifdef _WIN64
-		addr = (duint)ADDPTR(moduleBase, m_baseClassDescriptors[i].pTypeDescriptor);
-#else
-		addr = (duint)m_baseClassDescriptors[i].pTypeDescriptor;
-#endif
-
-		dprintf("m_baseClassDescriptors[%d].pTypeDescriptor: %p\n", i, m_baseClassDescriptors[i].pTypeDescriptor);
-
-		// Populate the TypeDescriptors for the Base Classes as well
-		if (!DbgMemRead(addr, &m_baseClassTypeDescriptors[i], sizeof(TypeDescriptor)))
-			return false;
-
-		dprintf("m_baseClassTypeDescriptors[%d]: %p\n", i, m_baseClassTypeDescriptors);
-
-		m_baseClassTypeNames[i] = Demangle(m_baseClassTypeDescriptors[i].sz_decorated_name);
-
-		// Assign the vbtable entry
-		m_vbtable[i] = 0;
-		m_baseClassOffsets[i] = (duint)ADDPTR(m_this, m_baseClassDescriptors[i].where.mdisp);
-
-		if (m_baseClassDescriptors[i].where.pdisp != -1)
-		{
-			// The docs aren't very clear here.
-			// The pdisp field is the offset of the vbtable from this
-			// Inside the vbtable we read at vdisp to get the final offset from the vbtable of the class
-			m_vbtable[i] = (duint)ADDPTR(m_this, m_baseClassDescriptors[i].where.pdisp);
-
-			duint pdisp = m_baseClassDescriptors[i].where.pdisp;
-			duint vdisp = m_baseClassDescriptors[i].where.vdisp;			
-			
-			duint pMemberOffsets = 0;
-			duint memberOffsets[MAX_BASE_CLASSES] = { 0 };
-
-			// Read the value at the vdisp to find where the class is off the vbtable of this class
-			//duint vbtable = 0;
-			if (!DbgMemRead(m_vbtable[i], &pMemberOffsets, sizeof(pMemberOffsets)))
-			{
-				dprintf("Problem reading the vbtable.\n");
-				continue;
-			}
-
-			if (!DbgMemRead(pMemberOffsets, &memberOffsets, sizeof(memberOffsets)))
-			{
-				dprintf("Problem reading the member offsets.\n");
-				continue;
-			}
-
-			m_baseClassOffsets[i] = memberOffsets[i];
-		}
 	}
 
 	return true;
@@ -352,22 +361,6 @@ void RTTI::PrintVerboseToLog()
 	//dprintf("\n");
 	//PrintBaseClasses();
 	//dprintf("=====================================================================================\n");
-}
-
-void RTTI::PrintBaseClasses()
-{
-	for (size_t i = 0; i < m_classHierarchyDescriptor.numBaseClasses; i++)
-	{
-		auto baseClass = GetBaseClassDescriptor(i);
-		auto baseClassType = m_baseClassTypeDescriptors[i];
-		auto baseClassName = m_baseClassTypeNames[i];
-		auto baseClassOffset = m_baseClassOffsets[i];
-
-		dprintf("    BaseClassDescriptor[%d]: %p - %s\n", i, m_BaseClassArray[i], baseClassName.c_str());
-		baseClass.Print();
-		dprintf("    ClassOffset: + 0x%X (%p)\n", GetBaseClassOffsetFromThis(i), GetBaseClassAddress(i));
-		dprintf("\n");
-	}
 }
 
 duint RTTI::GetVbtable(size_t idx)

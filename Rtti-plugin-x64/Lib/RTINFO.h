@@ -34,7 +34,7 @@ struct PMD
 
 inline void PMD::Print() 
 {
-	dprintf("        mdisp: %d  pdisp: %d  vdisp: %d\n", mdisp, pdisp, vdisp);
+	dprintf("  mdisp: %d  pdisp: %d  vdisp: %d\n", mdisp, pdisp, vdisp);
 }
 
 struct TypeDescriptor {
@@ -55,8 +55,7 @@ inline void TypeDescriptor::Print()
 
 struct RTTIBaseClassDescriptor
 {
-	DWORD pTypeDescriptor;	// type descriptor of the class
-
+	DWORD pTypeDescriptor;				// type descriptor of the class
 	DWORD numContainedBases;			// number of nested classes following in the Base Class Array
 	struct PMD where;					// pointer-to-member displacement info
 	DWORD attributes;					// flags, usually 0
@@ -66,11 +65,12 @@ struct RTTIBaseClassDescriptor
 
 inline void RTTIBaseClassDescriptor::Print()
 {
-	dprintf("      pTypeDescriptor: %p\n", pTypeDescriptor);
-	dprintf("      numContainedBases: %d\n", numContainedBases);
-	dprintf("      where:\n");
+	dprintf("BaseClassDescriptor\n");
+	dprintf("  pTypeDescriptor: %p\n", pTypeDescriptor);
+	dprintf("  numContainedBases: %d\n", numContainedBases);
+	dprintf("  where:\n");
 	where.Print();
-	dprintf("      attributes: %X\n", attributes);
+	dprintf("  attributes: %X\n", attributes);
 }
 
 // DWORD always
