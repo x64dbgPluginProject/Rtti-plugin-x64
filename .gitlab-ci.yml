@@ -1,17 +1,11 @@
 variables:
   Solution: Rtti-plugin-x64.sln
 
-stages:
-  - build
-
 build:
-  image: $CI_REGISTRY/colinsenner/docker-builds:latest
-  stage: build
+  image: registry.gitlab.com/colinsenner/docker-builds:latest
   tags:
     - windows
   script:
   - echo building...
   - echo CI_PROJECT_NAME = $CI_PROJECT_NAME
   - MsBuild.exe "%Solution%" -nologo -t:Build -p:Configuration=Release -p:Platform=x86
-  except:
-  - tags
