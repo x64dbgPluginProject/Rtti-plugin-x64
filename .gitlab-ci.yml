@@ -6,15 +6,12 @@ stages:
 
 build:
   image: $CI_REGISTRY/colinsenner/docker-builds:latest
-  services:
-    - name: $CI_REGISTRY/colinsenner/docker-builds:19.03.12-dind
-      alias: docker
   stage: build
   tags:
     - windows
   script:
   - echo building...
-  - echo CI_PROJECT_NAME = %CI_PROJECT_NAME%
+  - echo CI_PROJECT_NAME = $CI_PROJECT_NAME
   - MsBuild.exe "%Solution%" -nologo -t:Build -p:Configuration=Release -p:Platform=x86
   except:
   - tags
