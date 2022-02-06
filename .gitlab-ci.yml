@@ -8,6 +8,8 @@ stages:
 
 build:
   stage: build
+  tags:
+    - windows
   script:
   - echo building...
   - echo CI_PROJECT_NAME = %CI_PROJECT_NAME%
