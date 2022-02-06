@@ -1,5 +1,3 @@
-image: registry.gitlab.com/colinsenner/docker-builds:latest
-
 variables:
   Solution: Rtti-plugin-x64.sln
 
@@ -7,6 +5,10 @@ stages:
   - build
 
 build:
+  image: $CI_REGISTRY/colinsenner/docker-builds:latest
+  services:
+    - name: $CI_REGISTRY/colinsenner/docker-builds:19.03.12-dind
+      alias: docker
   stage: build
   tags:
     - windows
