@@ -61,5 +61,3 @@ auto-release-master:
     description: "Created using the release-cli $EXTRA_DESCRIPTION"
     tag_name: v$TAG
     ref: $CI_COMMIT_SHA
-    milestones:
-      - 'm2'
