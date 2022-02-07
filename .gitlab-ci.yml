@@ -5,6 +5,8 @@ build:
   tags:
     - windows
     - colin-pc
+  before_script:
+    - call "%VS160COMNTOOLS%\vsvars32" # import in path tools like msbuild, mstest, etc using VS script
   script:
     - |
       write-host "While it is true that I default to PowerShell, running cmd is easy..."
@@ -13,7 +15,7 @@ build:
       echo "Running in project $env:CI_PROJECT_NAME with results at $env:CI_JOB_URL ($env:CI_JOB_URL)."
       echo "CMD / Windows version"
       ver
-      "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"
+      call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"
       echo VS160COMNTOOLS is "%VS160COMNTOOLS%"
       echo Building solution %Solution%...
       MsBuild.exe "%Solution%" -nologo -t:Build -p:Configuration=Release -p:Platform=x86
