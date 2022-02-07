@@ -7,5 +7,5 @@ build:
     - colin-pc
   script:
     - |
-      Get-ChildItem -Path Env:
+      dir
       echo Done!
