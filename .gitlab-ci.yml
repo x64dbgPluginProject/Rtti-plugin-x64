@@ -4,7 +4,7 @@ variables:
 build:
   image: registry.gitlab.com/colinsenner/docker-builds:latest
   tags:
-    - windows
+    - docker
   script:
   - echo building...
   - echo CI_PROJECT_NAME = $CI_PROJECT_NAME
