@@ -14,8 +14,9 @@ build:
       echo "CMD / Windows version"
       ver
       echo "This artifact file was created by a CMD script" > myartifactfile.txt
-      echo *
-      cmd.exe /k "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"
+      echo =============================================================================
+      "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"
+      echo =============================================================================
       echo vs160comntools is "%VS160COMNTOOLS%"
       '@
 
