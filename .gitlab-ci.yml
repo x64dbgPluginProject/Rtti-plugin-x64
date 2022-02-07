@@ -53,8 +53,9 @@ upload:
   stage: upload
   image: curlimages/curl:latest
   needs:
-    - job: generate_tag
+    - job: build
       artifacts: true
+    - job: generate_tag
   script:
     - |
       curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file bin/Rtti.dp32 "${PACKAGE_REGISTRY_URL}/Rtti.dp32"
