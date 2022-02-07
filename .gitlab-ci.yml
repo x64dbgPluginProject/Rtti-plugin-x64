@@ -1,9 +1,11 @@
 variables:
   Solution: Rtti-plugin-x64.sln
+  VERSION: 0.0.3
+  # /projects/:id/packages/generic/:package_name/:package_version/:file_name?status=:status
+  PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}"
 
 stages:
   - build
-  - prepare
   - upload
   - release
 
@@ -31,16 +33,6 @@ build:
       - bin/*
     expire_in: never
 
-generate_tag:
-  stage: prepare
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH # Run this job when the default branch changes
-  script:
-    - echo "TAG=0.0.2" > tag.env
-  artifacts:
-    reports:
-      dotenv: tag.env
-
 upload:
   stage: upload
   image: curlimages/curl:latest
@@ -51,9 +43,6 @@ upload:
 
 auto-release-master:
   image: registry.gitlab.com/gitlab-org/release-cli
-  needs:
-    - job: generate_tag
-      artifacts: true
   stage: release
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH # Run this job when when commits are pushed to the default branch
