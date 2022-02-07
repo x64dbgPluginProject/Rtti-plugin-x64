@@ -21,7 +21,5 @@ build:
   artifacts:
     name: "$env:CI_JOB_STAGE-$env:CI_COMMIT_REF_NAME"
     paths:
-      - bin/Rtti.dp32
-      - bin/Rtti.dp64
-      - bin/ClassRTTIPluginTest32.exe
-      - bin/ClassRTTIPluginTest64.exe
+      - bin/*
+    expire_in: never
