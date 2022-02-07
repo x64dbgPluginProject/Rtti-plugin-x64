@@ -5,8 +5,9 @@ build:
   tags:
     - windows
     - shared-windows
+    - windows-1809
   script:
-  - cmd.exe /k "`"C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\Common7\Tools\VsDevCmd.bat`" && powershell.exe -NoLogo -ExecutionPolicy Bypass"
-  - echo Building $CI_PROJECT_NAME...
-  - ls
+  - cmd.exe /k "`"C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\Common7\Tools\VsDevCmd.bat`""
+  - set
+  - dir
   - echo Done!
