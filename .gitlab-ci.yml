@@ -37,6 +37,8 @@ build:
 
 generate_tag:
   stage: prepare
+  needs:
+    - job: build
   rules:
     - if: $CI_COMMIT_TAG
       when: never
@@ -51,11 +53,10 @@ upload:
   stage: upload
   image: curlimages/curl:latest
   needs:
-    - job: build
+    - job: generate_tag
       artifacts: true
   script:
     - |
-      echo curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file bin/Rtti.dp32 "${PACKAGE_REGISTRY_URL}/Rtti.dp32"
       curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file bin/Rtti.dp32 "${PACKAGE_REGISTRY_URL}/Rtti.dp32"
 
 auto-release-master:
@@ -73,3 +74,8 @@ auto-release-master:
     description: "Created using the release-cli $EXTRA_DESCRIPTION"
     tag_name: v$TAG
     ref: $CI_COMMIT_SHA
+    assets:
+      links:
+        - name: 'Rtti.dp32'
+          url: '${PACKAGE_REGISTRY_URL}/Rtti.dp32'
+
