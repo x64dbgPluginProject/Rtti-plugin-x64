@@ -15,7 +15,7 @@ build:
       ver
       echo "This artifact file was created by a CMD script" > myartifactfile.txt
       echo *
-      cmd.exe /c ""C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat" & powershell"
+      cmd.exe /k ""C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"
       echo *
       echo "Listing all Environment variables:"
       set
