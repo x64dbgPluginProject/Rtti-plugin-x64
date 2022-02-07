@@ -16,11 +16,7 @@ build:
       echo "This artifact file was created by a CMD script" > myartifactfile.txt
       echo *
       cmd.exe /k ""C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"
-      echo %VS160COMNTOOLS%
-      echo *
-      echo "Listing all Environment variables:"
-      set
-
+      echo vs160comntools is "%VS160COMNTOOLS%"
       '@
 
       CMD.EXE /C $env:public\inline.cmd
