@@ -14,10 +14,11 @@ build:
       echo "CMD / Windows version"
       ver
       echo "This artifact file was created by a CMD script" > myartifactfile.txt
+      echo solution name is "$Solution"
       echo =============================================================================
       "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"
       echo =============================================================================
-      echo solution name is "$Solution"
+      
       REM MsBuild.exe "%Solution%" -nologo -t:Build -p:Configuration=Release -p:Platform=x86
       '@
 
