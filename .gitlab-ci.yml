@@ -7,7 +7,6 @@ build:
     - colin-pc
   script:
     - |
-      cmd.exe
-      "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"
-      set
+      cmd.exe /k ""C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat" & powershell"
+      Get-ChildItem -Path Env:
       echo Done!
