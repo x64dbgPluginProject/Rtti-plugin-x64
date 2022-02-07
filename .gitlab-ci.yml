@@ -4,7 +4,7 @@ variables:
 build:
   tags:
     - windows
-    - shared-windows
+    - colin-pc
   script:
     - |
       cmd.exe
