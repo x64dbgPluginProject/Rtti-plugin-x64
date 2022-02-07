@@ -4,7 +4,7 @@ variables:
 build:
   image: registry.gitlab.com/colinsenner/docker-builds:latest
   services:
-  - docker:dind
+    - docker:dind
   tags:
     - docker
   script:
