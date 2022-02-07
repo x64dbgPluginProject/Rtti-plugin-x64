@@ -6,7 +6,7 @@ build:
   services:
     - docker:dind
   tags:
-    - docker
+    - windows
   script:
   - echo building...
   - echo CI_PROJECT_NAME = $CI_PROJECT_NAME
