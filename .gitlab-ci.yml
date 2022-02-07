@@ -1,7 +1,13 @@
 variables:
   Solution: Rtti-plugin-x64.sln
 
+stages:
+  - build
+  - prepare
+  - release
+
 build:
+  stage: build
   tags:
     - windows
     - colin-pc
@@ -23,3 +29,37 @@ build:
     paths:
       - bin/*
     expire_in: never
+
+generate_tag:
+  stage: prepare
+  needs:
+    - job: build  
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH # Run this job when the default branch changes
+  script:
+    - echo "TAG=0.0.1" > tag.env
+  artifacts:
+    reports:
+      dotenv: tag.env
+
+auto-release-master:
+  image: registry.gitlab.com/gitlab-org/release-cli
+  needs:
+    - job: generate_tag
+      artifacts: true
+  stage: release
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never                                 # Do not run this job when a tag is created manually
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH # Run this job when when commits are pushed to the default branch
+  script:
+    - echo "Release $TAG"
+  release:
+    name: "Release $TAG"
+    description: "Created using the release-cli $EXTRA_DESCRIPTION"
+    tag_name: v$TAG
+    ref: $CI_COMMIT_SHA
+    milestones:
+      - 'm2'
