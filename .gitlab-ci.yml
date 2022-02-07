@@ -13,10 +13,8 @@ build:
       echo "Running in project $env:CI_PROJECT_NAME with results at $env:CI_JOB_URL ($env:CI_JOB_URL)."
       echo "CMD / Windows version"
       ver
-      echo "This artifact file was created by a CMD script" > myartifactfile.txt
-      echo =============================================================================
       "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"
-      echo =============================================================================
+      echo VS160COMNTOOLS is "%VS160COMNTOOLS%"
       echo Building solution %Solution%...
       MsBuild.exe "%Solution%" -nologo -t:Build -p:Configuration=Release -p:Platform=x86
       '@
