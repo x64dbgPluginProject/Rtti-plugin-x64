@@ -11,9 +11,17 @@ build:
       set-content $env:public\inline.cmd -Value @'
       call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"
 
-      MsBuild.exe "%Solution%" -verbosity:minimal -nologo -t:Build -p:Configuration=Release -p:Platform=x86
-      MsBuild.exe "%Solution%" -verbosity:minimal -nologo -t:Build -p:Configuration=Release -p:Platform=x64
+      MsBuild.exe "%Solution%" -verbosity:quiet -nologo -t:Build -p:Configuration=Release -p:Platform=x86
+      MsBuild.exe "%Solution%" -verbosity:quiet -nologo -t:Build -p:Configuration=Release -p:Platform=x64
       '@
 
       CMD.EXE /C $env:public\inline.cmd
       exit $LASTEXITCODE
+
+  artifacts:
+    name: "$env:CI_JOB_STAGE-$env:CI_COMMIT_REF_NAME"
+    paths:
+      - bin/Rtti.dp32
+      - bin/Rtti.dp64
+      - bin/ClassRTTIPluginTest32.exe
+      - bin/ClassRTTIPluginTest64.exe
