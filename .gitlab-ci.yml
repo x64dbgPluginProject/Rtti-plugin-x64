@@ -1,3 +1,9 @@
+# NOTES
+# This is configured to only build when my computer runner is running
+# via the tag 'colin-pc'
+# On my pc I have VS 2019 Community, on the gitlab hosted windows runners (- shared-windows - windows - windows-1809)
+# They have BuildTools instead of VS Community, so you'll need to swap those out
+
 variables:
   Solution: Rtti-plugin-x64.sln
   VERSION: 0.0.1
@@ -58,6 +64,7 @@ upload:
     - job: generate_tag
   script:
     - |
+      echo Uploading plugins to: ${PACKAGE_REGISTRY_URL}/
       curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file bin/Rtti.dp32 "${PACKAGE_REGISTRY_URL}/Rtti.dp32"
 
 auto-release-master:
