@@ -5,8 +5,6 @@ build:
   tags:
     - windows
     - colin-pc
-  before_script:
-    - call "%VS160COMNTOOLS%\vsvars32" # import in path tools like msbuild, mstest, etc using VS script
   script:
     - |
       write-host "While it is true that I default to PowerShell, running cmd is easy..."
