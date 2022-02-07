@@ -5,8 +5,8 @@ build:
   tags:
     - windows
     - colin-pc
-  script: |
-    - "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"
+  script:
+    - "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\Tools\\VsDevCmd.bat"
     - "Get-ChildItem -Path Env:"
     - ls
     - echo Done!
