@@ -24,6 +24,7 @@ build:
 
   artifacts:
     name: "$env:CI_JOB_STAGE-$env:CI_COMMIT_REF_NAME"
+    when: on_success
     paths:
       - bin/*
     expire_in: never
