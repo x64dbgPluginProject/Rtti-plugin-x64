@@ -46,6 +46,7 @@ upload:
   image: curlimages/curl:latest
   script:
     - |
+      echo curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file bin/Rtti.dp32 "${PACKAGE_REGISTRY_URL}/Rtti.dp32"
       curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file bin/Rtti.dp32 "${PACKAGE_REGISTRY_URL}/Rtti.dp32"
 
 auto-release-master:
