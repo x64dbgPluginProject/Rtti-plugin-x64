@@ -1,20 +1,23 @@
 variables:
   Solution: Rtti-plugin-x64.sln
 
-stages:
-  - build
-
 build:
-  image: $CI_REGISTRY/colinsenner/docker-builds:latest
-  services:
-    - name: $CI_REGISTRY/colinsenner/docker-builds:19.03.12-dind
-      alias: docker
-  stage: build
   tags:
     - windows
+    - colin-pc
   script:
-  - echo building...
-  - echo CI_PROJECT_NAME = %CI_PROJECT_NAME%
-  - MsBuild.exe "%Solution%" -nologo -t:Build -p:Configuration=Release -p:Platform=x86
-  except:
-  - tags
+    - |
+      write-host "While it is true that I default to PowerShell, running cmd is easy..."
+      set-content $env:public\inline.cmd -Value @'
+      echo "This script is an inline script in .gitlab-ci.yml"
+      echo "Running in project $env:CI_PROJECT_NAME with results at $env:CI_JOB_URL ($env:CI_JOB_URL)."
+      echo "CMD / Windows version"
+      ver
+      call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"
+      echo VS160COMNTOOLS is "%VS160COMNTOOLS%"
+      echo Building solution %Solution%...
+      MsBuild.exe "%Solution%" -nologo -t:Build -p:Configuration=Release -p:Platform=x86
+      '@
+
+      CMD.EXE /C $env:public\inline.cmd
+      exit $LASTEXITCODE
