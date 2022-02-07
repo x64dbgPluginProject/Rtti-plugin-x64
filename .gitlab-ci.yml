@@ -9,14 +9,10 @@ build:
     - |
       write-host "While it is true that I default to PowerShell, running cmd is easy..."
       set-content $env:public\inline.cmd -Value @'
-      echo "This script is an inline script in .gitlab-ci.yml"
-      echo "Running in project $env:CI_PROJECT_NAME with results at $env:CI_JOB_URL ($env:CI_JOB_URL)."
-      echo "CMD / Windows version"
-      ver
       call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"
-      echo VS160COMNTOOLS is "%VS160COMNTOOLS%"
-      echo Building solution %Solution%...
-      MsBuild.exe "%Solution%" -nologo -t:Build -p:Configuration=Release -p:Platform=x86
+
+      MsBuild.exe "%Solution%" -verbosity:minimal -nologo -t:Build -p:Configuration=Release -p:Platform=x86
+      MsBuild.exe "%Solution%" -verbosity:minimal -nologo -t:Build -p:Configuration=Release -p:Platform=x64
       '@
 
       CMD.EXE /C $env:public\inline.cmd
