@@ -17,8 +17,8 @@ build:
       echo =============================================================================
       "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"
       echo =============================================================================
-      
-      REM MsBuild.exe "%Solution%" -nologo -t:Build -p:Configuration=Release -p:Platform=x86
+      echo Building solution %Solution%...
+      MsBuild.exe "%Solution%" -nologo -t:Build -p:Configuration=Release -p:Platform=x86
       '@
 
       CMD.EXE /C $env:public\inline.cmd
